@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarmaya Saathi</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Mobile App Container -->
+    <div class="app-container">
+        
+        <!-- 1. Splash Screen -->
+        <div id="splash-screen" class="screen">
+            <h1 class="logo">Sarmaya Saathi</h1>
+            <p class="tagline">Community Saving App</p>
+        </div>
+
+        <!-- 2. Auth Screen (Login & Signup) -->
+        <div id="auth-screen" class="screen scrollable-screen auth-bg" style="display: none;">
+            
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h1 class="logo" style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Sarmaya Saathi</h1>
+                <p class="tagline" style="color: #FFD700; font-size: 14px; margin-top: 5px;">Secure Access</p>
+            </div>
+
+            <div class="auth-box">
+                
+                <!-- ================= LOG IN SECTION ================= -->
+                <div id="login-section">
+                    <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Welcome Back!</h2>
+                    <form id="loginForm" onsubmit="loginUser(event)">
+                        <input type="tel" id="login-mobile" required pattern="[0-9]{10}" placeholder="10-Digit Mobile Number">
+                        <input type="password" id="login-password" required placeholder="Enter Your Password">
+                        <button type="submit" class="primary-btn">Log In</button>
+                    </form>
+                    <p id="login-message" class="message-box"></p>
+                    <div class="switch-text">
+                        Don't have an account? <span class="switch-link" onclick="toggleScreens('signup')">Sign Up</span>
+                    </div>
+                </div>
+
+                <!-- ================= SIGN UP SECTION ================= -->
+                <div id="signup-section" style="display: none;">
+                    <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Join Us</h2>
+                    <form id="signupForm" onsubmit="registerUser(event)">
+                        <input type="text" id="reg-name" required placeholder="Full Name">
+                        <input type="email" id="reg-email" required placeholder="Email Address">
+                        <input type="tel" id="reg-mobile" required pattern="[0-9]{10}" placeholder="10-Digit Mobile Number">
+                        <input type="password" id="reg-password" required placeholder="Create Strong Password">
+                        <button type="submit" class="primary-btn" style="background-color: #28a745; color: white;">Sign Up</button>
+                    </form>
+                    <p id="signup-message" class="message-box"></p>
+                    <div class="switch-text">
+                        Already have an account? <span class="switch-link" onclick="toggleScreens('login')">Log In</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Main Dashboard Screen -->
+        <div id="dashboard-screen" class="screen scrollable-screen" style="display: none;">
+            <div class="header">
+                <!-- FIX 1: Added user-name-display ID here -->
+                <h3>Hi, <span id="user-name-display" style="color: white;">User</span></h3>
+                <div class="profile-icon">👤</div>
+            </div>
+
+            <div class="wallet-card">
+                <p>Total Wallet Balance</p>
+                <!-- FIX 2: Added wallet-balance ID here -->
+                <h1 class="wallet-amount" id="wallet-balance">$0.00</h1>
+                <button class="add-money-btn">+ Add Funds</button>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <h4>My Groups</h4>
+                    <p>0 Active</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Referrals</h4>
+                    <p>$0 Earned</p>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>Recent Activity</h3>
+                <div class="activity-item">
+                    <div>
+                        <strong>Account Created</strong>
+                        <p class="date">Today</p>
+                    </div>
+                    <div class="activity-amount positive">Welcome</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Group List Screen -->
+        <div id="groups-screen" class="screen scrollable-screen" style="display: none;">
+            <div class="header">
+                <h3>Active Groups</h3>
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="tab active">Weekly</button>
+                <button class="tab">Monthly</button>
+                <button class="tab">Quarterly</button>
+                <button class="tab">Yearly</button>
+            </div>
+
+            <div class="group-list">
+                <p style="text-align: center; padding: 20px; color: #666;">Loading active pools...</p>
+            </div>
+            <button class="floating-btn" onclick="openJoinScreen()">+ Custom Pool</button>
+        </div>
+
+        <!-- 5. Join Group Screen -->
+        <div id="join-group-screen" class="screen overlay-screen" style="display: none;">
+            <div class="header">
+                <h3 onclick="closeJoinScreen()" style="cursor: pointer;">⬅ Back</h3>
+                <h3>Custom Pool</h3>
+            </div>
+            <div class="join-box">
+                <h4>Customize Your Plan</h4>
+                
+                <div class="slider-group">
+                    <label>Amount ($):</label>
+                    <div class="slider-input-wrapper">
+                        <input type="range" id="amount-slider" min="10" max="5000" step="10" value="10" oninput="syncInputs('amount', 'slider')">
+                        <input type="number" id="amount-box" min="10" max="5000" step="10" value="10" oninput="syncInputs('amount', 'box')" onblur="checkLimits('amount')">
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <label>Members:</label>
+                    <div class="slider-input-wrapper">
+                        <input type="range" id="member-slider" min="5" max="50" step="1" value="5" oninput="syncInputs('member', 'slider')">
+                        <input type="number" id="member-box" min="5" max="50" step="1" value="5" oninput="syncInputs('member', 'box')" onblur="checkLimits('member')">
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <label>Cycle:</label>
+                    <select class="cycle-select">
+                        <option>Weekly</option>
+                        <option>Monthly</option>
+                        <option>Quarterly</option>
+                    </select>
+                </div>
+
+                <button class="primary-btn" onclick="createCustomPool()">Create Pool</button>
+            </div>
+        </div>
+
+        <!-- 6. Payout Screen -->
+        <div id="payouts-screen" class="screen scrollable-screen" style="display: none;">
+            <div class="header">
+                <h3>Action Center</h3>
+            </div>
+            <div class="payout-card">
+                <h3>Current Pool: $0</h3>
+                <p class="timer">⏳ Join a pool to see actions</p>
+                
+                <div class="payout-actions">
+                    <button class="action-btn bid-btn" onclick="alert('Bidding prompt opened. Enter discount %.')">🟢 Bidding Karein</button>
+                    <button class="action-btn lot-btn" onclick="alert('Opted into Auto-draw (Lottery).')">🟡 Lottery Me Jaayein</button>
+                </div>
+            </div>
+            <p style="text-align: center; font-size: 12px; color: #666; padding: 20px;">*Platform fee of 2% applies to all payouts.</p>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-nav" id="bottom-nav" style="display: none;">
+            <div class="nav-item active" id="nav-home" onclick="switchTab('home')">Home</div>
+            <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">Groups</div>
+            <div class="nav-item" id="nav-payouts" onclick="switchTab('payouts')">Payouts</div>
+        </div>
+
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
