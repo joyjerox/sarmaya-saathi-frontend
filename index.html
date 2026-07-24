@@ -58,6 +58,63 @@
             </div>
         </div>
 
+<!-- ================= PROFILE MENU OVERLAY ================= -->
+        <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6);">
+            <div style="width: 85%; background: white; margin: 80px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h3 style="color: #0A192F;">My Profile</h3>
+                    <span onclick="closeProfile()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
+                </div>
+                
+                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Deposit History API pending')">💰 Deposit History</button>
+                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Withdrawal History API pending')">🏦 Withdrawal History</button>
+                <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="openReferralScreen()">🤝 Refer & Earn Teams</button>
+                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System API pending')">🎧 Customer Support</button>
+                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Change Password Form pending')">🔒 Change Password</button>
+                
+                <button class="action-btn" style="background-color: #ffebee; color: #d32f2f; border: 1px solid #ef5350; margin-top: 10px;" onclick="logoutUser()">🚪 Logout</button>
+                <p style="text-align: center; font-size: 12px; color: #888; margin-top: 15px;">App Version 1.0.1 (Live)</p>
+            </div>
+        </div>
+
+        <!-- ================= REFERRAL SYSTEM SCREEN ================= -->
+        <div id="referral-screen" class="screen scrollable-screen" style="display: none; z-index: 30;">
+            <div class="header">
+                <h3 onclick="closeReferralScreen()" style="cursor: pointer;">⬅ Back</h3>
+                <h3>Refer & Earn</h3>
+            </div>
+            
+            <div class="wallet-card" style="margin-top: 20px;">
+                <p>Total Commission Earned</p>
+                <h1 class="wallet-amount" style="font-size: 32px;">$0.00</h1>
+            </div>
+
+            <div class="join-box" style="text-align: center; margin-top: 10px;">
+                <h4 style="color: #0A192F;">Invite Friends, Build Team</h4>
+                <p style="font-size: 14px; color: #666; margin: 10px 0;">Share your unique link. Earn commission when they join a pool!</p>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; text-align: center; background: #e0e0e0; font-size: 12px; margin-bottom: 0;">
+                    <button class="primary-btn" onclick="copyLink()" style="width: auto; padding: 12px;">Copy</button>
+                </div>
+                
+                <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+                    <button style="padding: 12px 25px; background: #25D366; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">WhatsApp</button>
+                    <button style="padding: 12px 25px; background: #1DA1F2; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">Twitter</button>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>My Team Details</h3>
+                <div class="activity-item">
+                    <div>
+                        <strong>Total Referrals</strong>
+                    </div>
+                    <div class="activity-amount" style="color: #0A192F; font-size: 18px;">0 Members</div>
+                </div>
+            </div>
+        </div>
+
         <!-- 3. Main Dashboard Screen -->
         <div id="dashboard-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">

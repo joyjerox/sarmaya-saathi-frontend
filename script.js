@@ -271,3 +271,41 @@ async function loadDashboard() {
         console.error("Dashboard fetch error:", error);
     }
 }
+
+// ==========================================
+// Profile & Referral UI Logic
+// ==========================================
+function openProfile() {
+    document.getElementById('profile-menu').style.display = 'block';
+}
+
+function closeProfile() {
+    document.getElementById('profile-menu').style.display = 'none';
+}
+
+function openReferralScreen() {
+    closeProfile();
+    document.getElementById('dashboard-screen').style.display = 'none';
+    document.getElementById('referral-screen').style.display = 'flex';
+}
+
+function closeReferralScreen() {
+    document.getElementById('referral-screen').style.display = 'none';
+    document.getElementById('dashboard-screen').style.display = 'flex';
+}
+
+function copyLink() {
+    const linkInput = document.getElementById('invite-link');
+    linkInput.select();
+    document.execCommand('copy');
+    alert("Invitation Link Copied!");
+}
+
+function logoutUser() {
+    localStorage.clear(); // Browser se user ka data hata dein
+    alert("Logged out successfully.");
+    window.location.reload(); // App ko refresh karke wapas login screen par bhej dein
+}
+
+// Profile Icon par click event jodne ke liye
+document.querySelector('.profile-icon').addEventListener('click', openProfile);
