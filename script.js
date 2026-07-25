@@ -297,11 +297,15 @@ function filterGroups(cycleName, tabElement) {
 
 async function joinPool(poolId) {
     const userId = localStorage.getItem('sarmaya_user_id');
-    if (!userId) { alert("Please login again."); return; }
+const token = localStorage.getItem('sarmaya_token'); // Token get kiya
+    if (!userId || !token) { alert("Please login again."); return; }
     try {
         const response = await fetch(`${SERVER_URL}/api/join-pool`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Token header mein add kiya
+            },
             body: JSON.stringify({ user_id: parseInt(userId), pool_id: parseInt(poolId) })
         });
         const data = await response.json();
