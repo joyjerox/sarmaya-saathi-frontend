@@ -179,35 +179,70 @@ function checkLimits(type) {
     if (isNaN(val) || val < min) { box.value = min; slider.value = min; }
 }
 
+// ==========================================
+// Groups Fetching & Filtering Logic
+// ==========================================
+let globalGroupsList = []; // Backend se aane wale saare groups yahan save honge
+
 async function fetchGroups() {
     try {
         const response = await fetch(`${SERVER_URL}/api/groups`);
         const data = await response.json();
 
         if (data.success) {
-            const groupList = document.querySelector('.group-list');
-            groupList.innerHTML = ''; 
-            if(data.groups.length === 0) {
-                groupList.innerHTML = '<p style="text-align: center; color: #666;">No active pools found.</p>';
-                return;
-            }
-            data.groups.forEach(group => {
-                groupList.innerHTML += `
-                    <div class="group-card">
-                        <div class="group-header">
-                            <strong>${group.name || 'Sarmaya Pool'}</strong>
-                            <span class="badge">${group.cycle || 'Weekly'}</span>
-                        </div>
-                        <p style="font-size: 14px; color: #555;">Pool Amount: $${group.pool_amount || group.amount || 0}</p>
-                        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Members: ${group.max_members || 20}</p>
-                        <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 8px;">Join Pool</button>
-                    </div>
-                `;
-            });
+            globalGroupsList = data.groups; // API ka data save kar liya
+            
+            // By default jo tab active hai (jaise Weekly), uska data dikhayein
+            const activeTab = document.querySelector('.filter-tabs .tab.active');
+            const defaultFilter = activeTab ? activeTab.innerText : 'Weekly';
+            
+            filterGroups(defaultFilter, activeTab);
         }
     } catch (error) {
         console.error("Groups fetch error:", error);
+        document.querySelector('.group-list').innerHTML = '<p style="text-align: center; color: red;">Failed to load pools from server.</p>';
     }
+}
+
+// Ye naya function tabs par click karne par chalega
+function filterGroups(cycleName, tabElement) {
+    // 1. UI Update: Purane tab ka color hatayein aur click kiye hue par lagayein
+    if (tabElement) {
+        document.querySelectorAll('.filter-tabs .tab').forEach(tab => tab.classList.remove('active'));
+        tabElement.classList.add('active');
+    }
+
+    // 2. Data Filter Karein
+    const groupListContainer = document.querySelector('.group-list');
+    groupListContainer.innerHTML = ''; 
+
+    let filteredGroups = [];
+    if (cycleName === 'All') {
+        filteredGroups = globalGroupsList; // Saare dikhayein
+    } else {
+        // Sirf wahi groups filter karein jinka cycle match karta ho
+        filteredGroups = globalGroupsList.filter(group => group.cycle === cycleName);
+    }
+
+    // 3. Screen Par Print Karein
+    if (filteredGroups.length === 0) {
+        groupListContainer.innerHTML = `<p style="text-align: center; padding: 20px; color: #666;">No active ${cycleName} pools found.</p>`;
+        return;
+    }
+
+    filteredGroups.forEach(group => {
+        groupListContainer.innerHTML += `
+            <div class="group-card">
+                <div class="group-header">
+                    <strong>${group.name || 'Sarmaya Pool'}</strong>
+                    <span class="badge">${group.cycle || 'Weekly'}</span>
+                </div>
+                <p style="font-size: 14px; color: #555;">Pool Amount: $${group.pool_amount || group.amount || 0}</p>
+                <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Members: ${group.max_members || 20}</p>
+                <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 8px;">Join Pool</button>
+            </div>
+        `;
+    });
 }
 
 async function joinPool(poolId) {
@@ -271,3 +306,43 @@ async function loadDashboard() {
         console.error("Dashboard fetch error:", error);
     }
 }
+
+// ==========================================
+// Profile & Referral UI Logic
+// ==========================================
+function openProfile() {
+    document.getElementById('profile-menu').style.display = 'block';
+}
+
+function closeProfile() {
+    document.getElementById('profile-menu').style.display = 'none';
+}
+
+function openReferralScreen() {
+    closeProfile();
+    document.getElementById('dashboard-screen').style.display = 'none';
+    document.getElementById('referral-screen').style.display = 'flex';
+}
+
+function closeReferralScreen() {
+    document.getElementById('referral-screen').style.display = 'none';
+    document.getElementById('dashboard-screen').style.display = 'flex';
+}
+
+function copyLink() {
+    const linkInput = document.getElementById('invite-link');
+    linkInput.select();
+    document.execCommand('copy');
+    alert("Invitation Link Copied!");
+}
+
+function logoutUser() {
+    localStorage.clear(); // Browser se user ka data hata dein
+    alert("Logged out successfully.");
+    window.location.reload(); // App ko refresh karke wapas login screen par bhej dein
+}
+
+// Har screen ke profile icon par click event jodne ke liye
+document.querySelectorAll('.profile-icon').forEach(icon => {
+    icon.addEventListener('click', openProfile);
+});
