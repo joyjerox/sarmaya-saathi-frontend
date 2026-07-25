@@ -12,6 +12,22 @@ setTimeout(() => {
 }, 3000); 
 
 // ==========================================
+// 3. NAYA: URL Referral Capture (Auto-fill)
+// ==========================================
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    
+    if (refCode) {
+        setTimeout(() => {
+            toggleScreens('signup');
+            const refInput = document.getElementById('reg-referral');
+            if(refInput) refInput.value = refCode;
+        }, 3100); 
+    }
+});
+
+// ==========================================
 // Screen Switcher (Toggle Log In / Sign Up / OTP)
 // ==========================================
 function toggleScreens(screenName) {
@@ -33,7 +49,7 @@ function toggleScreens(screenName) {
 }
 
 // ==========================================
-// User Signup Logic
+// UPDATED: User Signup Logic (With Referral)
 // ==========================================
 async function registerUser(event) {
     event.preventDefault(); 
@@ -42,6 +58,11 @@ async function registerUser(event) {
     const email = document.getElementById('reg-email').value;
     const mobile = document.getElementById('reg-mobile').value;
     const password = document.getElementById('reg-password').value;
+    
+    // NAYA: Form se referral code uthayein (agar id 'reg-referral' exist karti hai)
+    const refInput = document.getElementById('reg-referral');
+    const referral_code = refInput ? refInput.value.trim() : ''; 
+
     const messageBox = document.getElementById('signup-message');
 
     messageBox.style.color = "#FFD700";
@@ -51,18 +72,15 @@ async function registerUser(event) {
         const response = await fetch(`${SERVER_URL}/api/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, mobile_number: mobile, email, password })
+            body: JSON.stringify({ name, mobile_number: mobile, email, password, referral_code })
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            // Email ko localStorage me save karein taaki OTP verification me use ho sake
             localStorage.setItem('temp_email', email);
             messageBox.innerText = "";
             document.getElementById('signupForm').reset();
-            
-            // OTP Screen dikhayein
             toggleScreens('otp');
         } else {
             messageBox.style.color = "#dc3545";
@@ -76,7 +94,7 @@ async function registerUser(event) {
 }
 
 // ==========================================
-// OTP Verification Logic (NEW)
+// OTP Verification Logic 
 // ==========================================
 async function verifyOTPUser(event) {
     event.preventDefault();
@@ -106,9 +124,9 @@ async function verifyOTPUser(event) {
         if (response.ok) {
             messageBox.style.color = "#28a745";
             messageBox.innerText = `🎉 ${data.message}`; 
-            localStorage.removeItem('temp_email'); // Safai
+            localStorage.removeItem('temp_email'); 
             document.getElementById('otpForm').reset();
-            setTimeout(() => toggleScreens('login'), 2000); // 2 second baad login par bhejein
+            setTimeout(() => toggleScreens('login'), 2000); 
         } else {
             messageBox.style.color = "#dc3545";
             messageBox.innerText = `⚠️ Error: ${data.error}`; 
@@ -145,7 +163,6 @@ async function loginUser(event) {
         const data = await response.json();
 
         if (response.ok) {
-            // Token aur User Data Save karein
             localStorage.setItem('sarmaya_token', data.token); 
             localStorage.setItem('sarmaya_user_id', data.user.id);
             localStorage.setItem('sarmaya_name', data.user.name);
@@ -166,6 +183,7 @@ async function loginUser(event) {
             const walletBalance = document.getElementById('wallet-balance');
             if(walletBalance) walletBalance.innerText = `$${data.user.wallet_balance}`;
             
+            loadDashboard(); // Load data on login
         } else {
             messageBox.style.color = "#dc3545";
             messageBox.innerText = `⚠️ Error: ${data.error}`;
@@ -185,6 +203,7 @@ function switchTab(tabName) {
     document.getElementById('groups-screen').style.display = 'none';
     document.getElementById('payouts-screen').style.display = 'none';
     document.getElementById('join-group-screen').style.display = 'none'; 
+    document.getElementById('referral-screen').style.display = 'none'; // Ensure referral hides
     
     document.getElementById('nav-home').classList.remove('active');
     document.getElementById('nav-groups').classList.remove('active');
@@ -297,22 +316,21 @@ function filterGroups(cycleName, tabElement) {
 
 async function joinPool(poolId) {
     const userId = localStorage.getItem('sarmaya_user_id');
-const token = localStorage.getItem('sarmaya_token'); // Token get kiya
+    const token = localStorage.getItem('sarmaya_token'); 
     if (!userId || !token) { alert("Please login again."); return; }
     try {
         const response = await fetch(`${SERVER_URL}/api/join-pool`, {
             method: 'POST',
             headers: {
-'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Token header mein add kiya
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({ user_id: parseInt(userId), pool_id: parseInt(poolId) })
         });
         const data = await response.json();
 
-if (data.success) {
+        if (data.success) {
             alert("🎉 " + data.message);
-            // NAYA FIX 2: Join hone ke turant baad dashboard data (aur balance) refresh karein
             loadDashboard();
         } else {
             alert("⚠️ " + data.error);
@@ -346,12 +364,11 @@ async function createCustomPool() {
 }
 
 // ==========================================
-// Wallet Deposit Logic (NEW: Add Funds)
+// Wallet Deposit Logic (Add Funds)
 // ==========================================
 async function addFunds() {
     const amount = prompt("Enter amount to add to your wallet:");
     
-    // Check if user cancelled or entered invalid text
     if (!amount || isNaN(amount) || amount <= 0) {
         alert("Please enter a valid amount.");
         return;
@@ -376,7 +393,6 @@ async function addFunds() {
         const data = await response.json();
         if (data.success) {
             alert(`🎉 Success! New Balance: $${data.new_balance}`);
-            // Naya balance localStorage me save karke UI update karein
             localStorage.setItem('sarmaya_balance', data.new_balance);
             loadDashboard(); 
         } else {
@@ -389,7 +405,7 @@ async function addFunds() {
 }
 
 // ==========================================
-// Dashboard Load (Live Balance & My Pools Fix)
+// Dashboard Load 
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
@@ -412,7 +428,6 @@ async function loadDashboard() {
             localStorage.setItem('sarmaya_balance', data.wallet_balance);
             document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${data.wallet_balance}`);
             
-            // NAYA: Dashboard load hote hi joined pools bhi load karein
             fetchMyPools(); 
         }
     } catch (error) {
@@ -421,7 +436,7 @@ async function loadDashboard() {
 }
 
 // ==========================================
-// Fetch User's Joined Pools (My Groups API)
+// Fetch User's Joined Pools 
 // ==========================================
 async function fetchMyPools() {
     const token = localStorage.getItem('sarmaya_token');
@@ -445,9 +460,8 @@ async function fetchMyPools() {
                 return;
             }
 
-            listContainer.innerHTML = ''; // Loading text hata dein
+            listContainer.innerHTML = ''; 
             
-            // Ek-ek karke pools ko UI me render karein
             data.my_pools.forEach(pool => {
                 listContainer.innerHTML += `
                     <div class="activity-item" style="border-left: 4px solid #FFD700; background: #fff; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
@@ -469,7 +483,7 @@ async function fetchMyPools() {
 }
 
 // ==========================================
-// Profile (Secure Route Fetch) & Referral Logic
+// Profile & Referral Fetch Logic (NAYA)
 // ==========================================
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
@@ -498,10 +512,43 @@ function closeProfile() {
     document.getElementById('profile-menu').style.display = 'none';
 }
 
+// NAYA: Fetch and Load Referral Data
+async function loadReferralData() {
+    const token = localStorage.getItem('sarmaya_token');
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/referrals`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // UI par Commission aur Team Size Update karein
+            const walletAmountEl = document.querySelector('#referral-screen .wallet-amount');
+            if(walletAmountEl) walletAmountEl.innerText = `$${data.commission_earned}`;
+            
+            const activityAmountEl = document.querySelector('#referral-screen .activity-amount');
+            if(activityAmountEl) activityAmountEl.innerText = `${data.team_size} Members`;
+            
+            // User ki unique referral link generate karke Input box me set karein
+            const inviteLink = `${window.location.origin}?ref=${data.referral_code}`;
+            const linkInput = document.getElementById('invite-link');
+            if(linkInput) linkInput.value = inviteLink;
+        }
+    } catch (error) {
+        console.error("Referral fetch error:", error);
+    }
+}
+
 function openReferralScreen() {
     closeProfile();
     document.getElementById('dashboard-screen').style.display = 'none';
     document.getElementById('referral-screen').style.display = 'flex';
+    
+    // NAYA: Screen khulte hi API se data mangwayein
+    loadReferralData(); 
 }
 
 function closeReferralScreen() {
@@ -511,9 +558,11 @@ function closeReferralScreen() {
 
 function copyLink() {
     const linkInput = document.getElementById('invite-link');
-    linkInput.select();
-    document.execCommand('copy');
-    alert("Invitation Link Copied!");
+    if(linkInput) {
+        linkInput.select();
+        document.execCommand('copy');
+        alert("Invitation Link Copied!");
+    }
 }
 
 function logoutUser() {
