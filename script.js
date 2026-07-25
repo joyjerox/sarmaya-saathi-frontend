@@ -334,12 +334,63 @@ async function createCustomPool() {
     }
 }
 
+// ==========================================
+// Wallet Deposit Logic (NEW: Add Funds)
+// ==========================================
+async function addFunds() {
+    const amount = prompt("Enter amount to add to your wallet:");
+    
+    // Check if user cancelled or entered invalid text
+    if (!amount || isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+    }
+
+    const token = localStorage.getItem('sarmaya_token');
+    if (!token) {
+        alert("Please login first.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/add-funds`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ amount: parseFloat(amount) })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            alert(`🎉 Success! New Balance: $${data.new_balance}`);
+            // Naya balance localStorage me save karke UI update karein
+            localStorage.setItem('sarmaya_balance', data.new_balance);
+            loadDashboard(); 
+        } else {
+            alert("⚠️ Error: " + data.error);
+        }
+    } catch (error) {
+        console.error("Error adding funds:", error);
+        alert("⚠️ Backend connection failed!");
+    }
+}
+
+// ==========================================
+// Dashboard Logic
+// ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
     const balance = localStorage.getItem('sarmaya_balance') || 0;
     
+    // Yahan hum '.wallet-amount' aur '#wallet-balance' dono update kar rahe hain
     const walletElement = document.querySelector('.wallet-amount');
     if (walletElement) walletElement.innerText = `$${balance}`;
+    
+    const walletBalanceNav = document.getElementById('wallet-balance');
+    if (walletBalanceNav) walletBalanceNav.innerText = `$${balance}`;
+    
     if (!userId) return;
 
     try {
