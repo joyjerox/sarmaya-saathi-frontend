@@ -141,24 +141,30 @@
                 <div class="profile-icon">👤</div>
             </div>
 
-            <!-- Dashboard Section ka button yahan update hua hai -->
-<div class="wallet-card">
-    <p>Total Wallet Balance</p>
-    <h1 class="wallet-amount" id="wallet-balance">$0.00</h1>
-    <!-- Yahan onclick add kiya hai -->
-    <button class="add-money-btn" onclick="addFunds()">+ Add Funds</button>
-</div>
+            <div class="wallet-card">
+                <p>Total Wallet Balance</p>
+                <h1 class="wallet-amount" id="wallet-balance">$0.00</h1>
+                <button class="add-money-btn" onclick="addFunds()">+ Add Funds</button>
+            </div>
 
             <div class="stats-container">
                 <div class="stat-box"><h4>My Groups</h4><p>0 Active</p></div>
                 <div class="stat-box"><h4>Referrals</h4><p>$0 Earned</p></div>
             </div>
-
+            
             <div class="recent-activity">
                 <h3>Recent Activity</h3>
                 <div class="activity-item">
                     <div><strong>Account Created</strong><p class="date">Today</p></div>
                     <div class="activity-amount positive">Welcome</div>
+                </div>
+            </div>
+
+            <!-- NAYA HISSA: My Joined Pools Section -->
+            <div class="recent-activity" style="margin-top: 20px; padding-bottom: 80px;">
+                <h3>My Joined Pools</h3>
+                <div id="my-pools-list">
+                    <p style="text-align: center; font-size: 14px; color: #666; padding: 10px;">Loading your pools...</p>
                 </div>
             </div>
         </div>

@@ -389,13 +389,12 @@ async function addFunds() {
 }
 
 // ==========================================
-// Dashboard Logic
+// Dashboard Load (Live Balance & My Pools Fix)
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
-    
-    // UI ko turant purane balance se update karein
     let balance = localStorage.getItem('sarmaya_balance') || 0;
+    
     document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${balance}`);
     
     if (!userId) return;
@@ -407,15 +406,65 @@ async function loadDashboard() {
             body: JSON.stringify({ user_id: parseInt(userId) })
         });
         const data = await response.json();
+        
         if (data.success) {
-            // NAYA FIX 3: Server se live API data aane par UI aur LocalStorage update karein
             document.querySelector('.stat-box p').innerText = `${data.active_groups} Active`;
-            
             localStorage.setItem('sarmaya_balance', data.wallet_balance);
             document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${data.wallet_balance}`);
+            
+            // NAYA: Dashboard load hote hi joined pools bhi load karein
+            fetchMyPools(); 
         }
     } catch (error) {
-        console.error("Dashboard fetch error:", error);
+        console.error("Dashboard error:", error);
+    }
+}
+
+// ==========================================
+// Fetch User's Joined Pools (My Groups API)
+// ==========================================
+async function fetchMyPools() {
+    const token = localStorage.getItem('sarmaya_token');
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/my-pools`, {
+            method: 'GET',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const listContainer = document.getElementById('my-pools-list');
+            
+            if (data.my_pools.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; font-size: 14px; color: #666; padding: 10px;">You haven\'t joined any pools yet.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = ''; // Loading text hata dein
+            
+            // Ek-ek karke pools ko UI me render karein
+            data.my_pools.forEach(pool => {
+                listContainer.innerHTML += `
+                    <div class="activity-item" style="border-left: 4px solid #FFD700; background: #fff; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #0A192F; font-size: 16px;">${pool.name || 'Custom Pool'}</strong>
+                                <p class="date" style="margin-top: 5px;">Cycle: ${pool.cycle || 'Weekly'} | Max Members: ${pool.max_members || 10}</p>
+                            </div>
+                            <div class="activity-amount positive" style="font-size: 18px; font-weight: bold; color: #28a745;">$${pool.pool_amount || pool.amount}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching my pools:", error);
+        document.getElementById('my-pools-list').innerHTML = '<p style="color: red; text-align: center;">Failed to load your pools.</p>';
     }
 }
 
