@@ -309,7 +309,14 @@ const token = localStorage.getItem('sarmaya_token'); // Token get kiya
             body: JSON.stringify({ user_id: parseInt(userId), pool_id: parseInt(poolId) })
         });
         const data = await response.json();
-        alert(data.success ? "🎉 " + data.message : "⚠️ " + data.error);
+
+if (data.success) {
+            alert("🎉 " + data.message);
+            // NAYA FIX 2: Join hone ke turant baad dashboard data (aur balance) refresh karein
+            loadDashboard();
+        } else {
+            alert("⚠️ " + data.error);
+        }
     } catch (error) {
         alert("Backend connection failed!");
     }
@@ -386,14 +393,10 @@ async function addFunds() {
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
-    const balance = localStorage.getItem('sarmaya_balance') || 0;
     
-    // Yahan hum '.wallet-amount' aur '#wallet-balance' dono update kar rahe hain
-    const walletElement = document.querySelector('.wallet-amount');
-    if (walletElement) walletElement.innerText = `$${balance}`;
-    
-    const walletBalanceNav = document.getElementById('wallet-balance');
-    if (walletBalanceNav) walletBalanceNav.innerText = `$${balance}`;
+    // UI ko turant purane balance se update karein
+    let balance = localStorage.getItem('sarmaya_balance') || 0;
+    document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${balance}`);
     
     if (!userId) return;
 
@@ -405,7 +408,11 @@ async function loadDashboard() {
         });
         const data = await response.json();
         if (data.success) {
+            // NAYA FIX 3: Server se live API data aane par UI aur LocalStorage update karein
             document.querySelector('.stat-box p').innerText = `${data.active_groups} Active`;
+            
+            localStorage.setItem('sarmaya_balance', data.wallet_balance);
+            document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${data.wallet_balance}`);
         }
     } catch (error) {
         console.error("Dashboard fetch error:", error);
