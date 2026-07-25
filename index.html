@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sarmaya Saathi</title>
     <link rel="stylesheet" href="styles.css">
-<!-- Is line ko <head> ke andar add karein, <link rel="stylesheet" href="styles.css"> ke theek niche -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Mobile App Container -->
@@ -57,10 +56,25 @@
                         Already have an account? <span class="switch-link" onclick="toggleScreens('login')">Log In</span>
                     </div>
                 </div>
+
+                <!-- ================= OTP VERIFICATION SECTION (NEW) ================= -->
+                <div id="otp-section" style="display: none;">
+                    <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Verify Email</h2>
+                    <p style="color: white; font-size: 13px; margin-bottom: 15px;">OTP sent to your email</p>
+                    <form id="otpForm" onsubmit="verifyOTPUser(event)">
+                        <input type="text" id="otp-input" required pattern="[0-9]{6}" placeholder="6-Digit OTP" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 20px; font-weight: bold;">
+                        <button type="submit" class="primary-btn" style="background-color: #17a2b8; color: white;">Verify OTP</button>
+                    </form>
+                    <p id="otp-message" class="message-box"></p>
+                    <div class="switch-text">
+                        <span class="switch-link" onclick="toggleScreens('login')">Back to Login</span>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-<!-- ================= PROFILE MENU OVERLAY ================= -->
+        <!-- ================= PROFILE MENU OVERLAY ================= -->
         <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6);">
             <div style="width: 85%; background: white; margin: 80px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
@@ -100,32 +114,12 @@
                     <button class="primary-btn" onclick="copyLink()" style="width: auto; padding: 12px;">Copy</button>
                 </div>
                 
-                <!-- NEW: Premium Social Media Logo Buttons -->
                 <div style="display: flex; justify-content: space-between; padding: 0 10px;">
-                    <!-- WhatsApp -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #25D366; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('WhatsApp share API connect hogi')">
-                        <i class="fab fa-whatsapp"></i>
-                    </button>
-                    
-                    <!-- Instagram -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('Instagram API connect hogi')">
-                        <i class="fab fa-instagram"></i>
-                    </button>
-                    
-                    <!-- Facebook -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #1877F2; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('FB share API connect hogi')">
-                        <i class="fab fa-facebook-f"></i>
-                    </button>
-                    
-                    <!-- Telegram -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #0088cc; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('Telegram API connect hogi')">
-                        <i class="fab fa-telegram-plane"></i>
-                    </button>
-                    
-                    <!-- More (Native Mobile Share) -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #607D8B; color: white; font-size: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="if(navigator.share){ navigator.share({title: 'Sarmaya Saathi', url: document.getElementById('invite-link').value}) } else { alert('More options opened') }">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
+                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #25D366; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('WhatsApp share API connect hogi')"><i class="fab fa-whatsapp"></i></button>
+                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('Instagram API connect hogi')"><i class="fab fa-instagram"></i></button>
+                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #1877F2; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('FB share API connect hogi')"><i class="fab fa-facebook-f"></i></button>
+                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #0088cc; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('Telegram API connect hogi')"><i class="fab fa-telegram-plane"></i></button>
+                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #607D8B; color: white; font-size: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="if(navigator.share){ navigator.share({title: 'Sarmaya Saathi', url: document.getElementById('invite-link').value}) } else { alert('More options opened') }"><i class="fas fa-ellipsis-h"></i></button>
                 </div>
             </div>
 
@@ -143,14 +137,12 @@
         <!-- 3. Main Dashboard Screen -->
         <div id="dashboard-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
-                <!-- FIX 1: Added user-name-display ID here -->
                 <h3>Hi, <span id="user-name-display" style="color: white;">User</span></h3>
                 <div class="profile-icon">👤</div>
             </div>
 
             <div class="wallet-card">
                 <p>Total Wallet Balance</p>
-                <!-- FIX 2: Added wallet-balance ID here -->
                 <h1 class="wallet-amount" id="wallet-balance">$0.00</h1>
                 <button class="add-money-btn">+ Add Funds</button>
             </div>
@@ -182,7 +174,6 @@
         <div id="groups-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Active Groups</h3>
-                <!-- Profile icon added here -->
                 <div class="profile-icon" style="cursor: pointer;">👤</div>
             </div>
             
@@ -242,7 +233,6 @@
         <div id="payouts-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Action Center</h3>
-                <!-- Profile icon added here -->
                 <div class="profile-icon" style="cursor: pointer;">👤</div>
             </div>
 

@@ -1,7 +1,6 @@
 // ==========================================
 // 1. API Server URL Setup
 // ==========================================
-// Yahan humne aapka live Render backend URL set kar diya hai
 const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
 
 // ==========================================
@@ -13,18 +12,23 @@ setTimeout(() => {
 }, 3000); 
 
 // ==========================================
-// Screen Switcher (Toggle Log In / Sign Up)
+// Screen Switcher (Toggle Log In / Sign Up / OTP)
 // ==========================================
 function toggleScreens(screenName) {
     const signupScreen = document.getElementById('signup-section');
     const loginScreen = document.getElementById('login-section');
+    const otpScreen = document.getElementById('otp-section');
+
+    signupScreen.style.display = 'none';
+    loginScreen.style.display = 'none';
+    otpScreen.style.display = 'none';
 
     if (screenName === 'login') {
-        signupScreen.style.display = 'none';
         loginScreen.style.display = 'block';
     } else if (screenName === 'signup') {
-        loginScreen.style.display = 'none';
         signupScreen.style.display = 'block';
+    } else if (screenName === 'otp') {
+        otpScreen.style.display = 'block';
     }
 }
 
@@ -41,7 +45,7 @@ async function registerUser(event) {
     const messageBox = document.getElementById('signup-message');
 
     messageBox.style.color = "#FFD700";
-    messageBox.innerText = "Processing...";
+    messageBox.innerText = "Processing & sending OTP...";
 
     try {
         const response = await fetch(`${SERVER_URL}/api/signup`, {
@@ -53,16 +57,64 @@ async function registerUser(event) {
         const data = await response.json();
 
         if (response.ok) {
-            messageBox.style.color = "#28a745";
-            messageBox.innerText = `🎉 ${data.message}`; 
+            // Email ko localStorage me save karein taaki OTP verification me use ho sake
+            localStorage.setItem('temp_email', email);
+            messageBox.innerText = "";
             document.getElementById('signupForm').reset();
-            setTimeout(() => toggleScreens('login'), 2000);
+            
+            // OTP Screen dikhayein
+            toggleScreens('otp');
         } else {
             messageBox.style.color = "#dc3545";
             messageBox.innerText = `⚠️ Error: ${data.error}`; 
         }
     } catch (error) {
         console.error("Signup request fail:", error);
+        messageBox.style.color = "#dc3545";
+        messageBox.innerText = "⚠️ Server connection failed.";
+    }
+}
+
+// ==========================================
+// OTP Verification Logic (NEW)
+// ==========================================
+async function verifyOTPUser(event) {
+    event.preventDefault();
+
+    const email = localStorage.getItem('temp_email');
+    const otp = document.getElementById('otp-input').value;
+    const messageBox = document.getElementById('otp-message');
+
+    if(!email) {
+        alert("Session expired. Please signup again.");
+        toggleScreens('signup');
+        return;
+    }
+
+    messageBox.style.color = "#FFD700";
+    messageBox.innerText = "Verifying...";
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/verify-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            messageBox.style.color = "#28a745";
+            messageBox.innerText = `🎉 ${data.message}`; 
+            localStorage.removeItem('temp_email'); // Safai
+            document.getElementById('otpForm').reset();
+            setTimeout(() => toggleScreens('login'), 2000); // 2 second baad login par bhejein
+        } else {
+            messageBox.style.color = "#dc3545";
+            messageBox.innerText = `⚠️ Error: ${data.error}`; 
+        }
+    } catch (error) {
+        console.error("OTP error:", error);
         messageBox.style.color = "#dc3545";
         messageBox.innerText = "⚠️ Server connection failed.";
     }
@@ -76,6 +128,10 @@ async function loginUser(event) {
 
     const mobile = document.getElementById('login-mobile').value;
     const password = document.getElementById('login-password').value;
+    const messageBox = document.getElementById('login-message');
+    
+    messageBox.style.color = "#FFD700";
+    messageBox.innerText = "Logging in...";
 
     try {
         const response = await fetch(`${SERVER_URL}/api/login`, {
@@ -89,14 +145,14 @@ async function loginUser(event) {
         const data = await response.json();
 
         if (response.ok) {
+            // Token aur User Data Save karein
             localStorage.setItem('sarmaya_token', data.token); 
             localStorage.setItem('sarmaya_user_id', data.user.id);
             localStorage.setItem('sarmaya_name', data.user.name);
             localStorage.setItem('sarmaya_mobile', data.user.mobile_number);
             localStorage.setItem('sarmaya_balance', data.user.wallet_balance);
 
-            alert("Login Successful! Welcome to Sarmaya Saathi.");
-
+            messageBox.innerText = "";
             document.getElementById('login-mobile').value = '';
             document.getElementById('login-password').value = '';
 
@@ -108,14 +164,16 @@ async function loginUser(event) {
             if(userNameDisplay) userNameDisplay.innerText = data.user.name;
             
             const walletBalance = document.getElementById('wallet-balance');
-            if(walletBalance) walletBalance.innerText = data.user.wallet_balance;
+            if(walletBalance) walletBalance.innerText = `$${data.user.wallet_balance}`;
             
         } else {
-            alert("Error: " + data.error);
+            messageBox.style.color = "#dc3545";
+            messageBox.innerText = `⚠️ Error: ${data.error}`;
         }
     } catch (error) {
         console.error("Error during login:", error);
-        alert("Failed to connect to the server. Check if your backend is running.");
+        messageBox.style.color = "#dc3545";
+        messageBox.innerText = "⚠️ Server connection failed.";
     }
 }
 
@@ -182,7 +240,7 @@ function checkLimits(type) {
 // ==========================================
 // Groups Fetching & Filtering Logic
 // ==========================================
-let globalGroupsList = []; // Backend se aane wale saare groups yahan save honge
+let globalGroupsList = []; 
 
 async function fetchGroups() {
     try {
@@ -190,12 +248,9 @@ async function fetchGroups() {
         const data = await response.json();
 
         if (data.success) {
-            globalGroupsList = data.groups; // API ka data save kar liya
-            
-            // By default jo tab active hai (jaise Weekly), uska data dikhayein
+            globalGroupsList = data.groups; 
             const activeTab = document.querySelector('.filter-tabs .tab.active');
             const defaultFilter = activeTab ? activeTab.innerText : 'Weekly';
-            
             filterGroups(defaultFilter, activeTab);
         }
     } catch (error) {
@@ -204,27 +259,22 @@ async function fetchGroups() {
     }
 }
 
-// Ye naya function tabs par click karne par chalega
 function filterGroups(cycleName, tabElement) {
-    // 1. UI Update: Purane tab ka color hatayein aur click kiye hue par lagayein
     if (tabElement) {
         document.querySelectorAll('.filter-tabs .tab').forEach(tab => tab.classList.remove('active'));
         tabElement.classList.add('active');
     }
 
-    // 2. Data Filter Karein
     const groupListContainer = document.querySelector('.group-list');
     groupListContainer.innerHTML = ''; 
 
     let filteredGroups = [];
     if (cycleName === 'All') {
-        filteredGroups = globalGroupsList; // Saare dikhayein
+        filteredGroups = globalGroupsList; 
     } else {
-        // Sirf wahi groups filter karein jinka cycle match karta ho
         filteredGroups = globalGroupsList.filter(group => group.cycle === cycleName);
     }
 
-    // 3. Screen Par Print Karein
     if (filteredGroups.length === 0) {
         groupListContainer.innerHTML = `<p style="text-align: center; padding: 20px; color: #666;">No active ${cycleName} pools found.</p>`;
         return;
@@ -308,10 +358,29 @@ async function loadDashboard() {
 }
 
 // ==========================================
-// Profile & Referral UI Logic
+// Profile (Secure Route Fetch) & Referral Logic
 // ==========================================
-function openProfile() {
+async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
+
+    const token = localStorage.getItem('sarmaya_token');
+    if(token) {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/profile`, {
+                method: 'GET',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                }
+            });
+            const data = await response.json();
+            if(data.success) {
+                console.log("Secure Profile Loaded:", data.user_data);
+            }
+        } catch(error) {
+            console.error("Failed to fetch secure profile data");
+        }
+    }
 }
 
 function closeProfile() {
@@ -337,9 +406,9 @@ function copyLink() {
 }
 
 function logoutUser() {
-    localStorage.clear(); // Browser se user ka data hata dein
+    localStorage.clear(); 
     alert("Logged out successfully.");
-    window.location.reload(); // App ko refresh karke wapas login screen par bhej dein
+    window.location.reload(); 
 }
 
 // Har screen ke profile icon par click event jodne ke liye
