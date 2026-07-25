@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sarmaya Saathi</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Mobile App Container -->
@@ -59,84 +58,17 @@
             </div>
         </div>
 
-        <!-- ================= PROFILE MENU OVERLAY ================= -->
-        <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6);">
-            <div style="width: 85%; background: white; margin: 80px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h3 style="color: #0A192F;">My Profile</h3>
-                    <span onclick="closeProfile()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
-                </div>
-                
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Deposit History API pending')">💰 Deposit History</button>
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Withdrawal History API pending')">🏦 Withdrawal History</button>
-                <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="openReferralScreen()">🤝 Refer & Earn Teams</button>
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System API pending')">🎧 Customer Support</button>
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Change Password Form pending')">🔒 Change Password</button>
-                
-                <button class="action-btn" style="background-color: #ffebee; color: #d32f2f; border: 1px solid #ef5350; margin-top: 10px;" onclick="logoutUser()">🚪 Logout</button>
-                <p style="text-align: center; font-size: 12px; color: #888; margin-top: 15px;">App Version 1.0.1 (Live)</p>
-            </div>
-        </div>
-
-        <!-- ================= REFERRAL SYSTEM SCREEN ================= -->
-        <div id="referral-screen" class="screen scrollable-screen" style="display: none; z-index: 30;">
-            <div class="header">
-                <h3 onclick="closeReferralScreen()" style="cursor: pointer;">⬅ Back</h3>
-                <h3>Refer & Earn</h3>
-            </div>
-            
-            <div class="wallet-card" style="margin-top: 20px;">
-                <p>Total Commission Earned</p>
-                <h1 class="wallet-amount" style="font-size: 32px;">$0.00</h1>
-            </div>
-
-           <div class="join-box" style="text-align: center; margin-top: 10px;">
-                <h4 style="color: #0A192F;">Invite Friends, Build Team</h4>
-                <p style="font-size: 14px; color: #666; margin: 10px 0;">Share your unique link. Earn commission when they join a pool!</p>
-                
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; text-align: center; background: #e0e0e0; font-size: 12px; margin-bottom: 0;">
-                    <button class="primary-btn" onclick="copyLink()" style="width: auto; padding: 12px;">Copy</button>
-                </div>
-                
-                <!-- NEW: Premium Social Media Logo Buttons -->
-                <div style="display: flex; justify-content: space-between; padding: 0 10px;">
-                    <!-- WhatsApp -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #25D366; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('WhatsApp share API connect hogi')">
-                        <i class="fab fa-whatsapp"></i>
-                    </button>
-                    
-                    <!-- Instagram -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('Instagram API connect hogi')">
-                        <i class="fab fa-instagram"></i>
-                    </button>
-                    
-                    <!-- Facebook -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #1877F2; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('FB share API connect hogi')">
-                        <i class="fab fa-facebook-f"></i>
-                    </button>
-                    
-                    <!-- Telegram -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #0088cc; color: white; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="alert('Telegram API connect hogi')">
-                        <i class="fab fa-telegram-plane"></i>
-                    </button>
-                    
-                    <!-- More (Native Mobile Share) -->
-                    <button style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #607D8B; color: white; font-size: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="if(navigator.share){ navigator.share({title: 'Sarmaya Saathi', url: document.getElementById('invite-link').value}) } else { alert('More options opened') }">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                </div>
-            </div>
-
         <!-- 3. Main Dashboard Screen -->
         <div id="dashboard-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
+                <!-- FIX 1: Added user-name-display ID here -->
                 <h3>Hi, <span id="user-name-display" style="color: white;">User</span></h3>
-                <div class="profile-icon" style="cursor: pointer;">👤</div>
+                <div class="profile-icon">👤</div>
             </div>
 
             <div class="wallet-card">
                 <p>Total Wallet Balance</p>
+                <!-- FIX 2: Added wallet-balance ID here -->
                 <h1 class="wallet-amount" id="wallet-balance">$0.00</h1>
                 <button class="add-money-btn">+ Add Funds</button>
             </div>
@@ -164,19 +96,17 @@
             </div>
         </div>
 
-      <!-- 4. Group List Screen (CLEANED) -->
+        <!-- 4. Group List Screen -->
         <div id="groups-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Active Groups</h3>
-                <div class="profile-icon" style="cursor: pointer;">👤</div>
             </div>
             
             <div class="filter-tabs">
-                <button class="tab active" onclick="filterGroups('Weekly', this)">Weekly</button>
-                <button class="tab" onclick="filterGroups('Monthly', this)">Monthly</button>
-                <button class="tab" onclick="filterGroups('Quarterly', this)">Quarterly</button>
-                <button class="tab" onclick="filterGroups('Yearly', this)">Yearly</button>
-                <button class="tab" onclick="filterGroups('All', this)">All</button>
+                <button class="tab active">Weekly</button>
+                <button class="tab">Monthly</button>
+                <button class="tab">Quarterly</button>
+                <button class="tab">Yearly</button>
             </div>
 
             <div class="group-list">
@@ -227,9 +157,7 @@
         <div id="payouts-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Action Center</h3>
-                <div class="profile-icon" style="cursor: pointer;">👤</div>
             </div>
-
             <div class="payout-card">
                 <h3>Current Pool: $0</h3>
                 <p class="timer">⏳ Join a pool to see actions</p>
