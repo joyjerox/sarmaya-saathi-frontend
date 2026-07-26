@@ -8,17 +8,25 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .header { background: #0A192F; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .container { max-width: 900px; margin: auto; }
-        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-left: 5px solid #FFD700; }
+        
+        .section-title { color: #0A192F; border-bottom: 2px solid #FFD700; padding-bottom: 5px; margin-top: 30px; }
+        
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card.withdraw { border-left: 5px solid #dc3545; } /* Red for out */
+        .card.deposit { border-left: 5px solid #28a745; } /* Green for in */
+        
         .info { flex: 1; min-width: 250px; }
         .info h3 { margin: 0 0 5px 0; color: #333; font-size: 18px; }
         .info p { margin: 3px 0; color: #555; font-size: 14px; }
         .actions { display: flex; gap: 10px; margin-top: 10px; }
+        
         button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
         .btn-approve { background: #28a745; }
         .btn-approve:hover { background: #218838; }
         .btn-reject { background: #dc3545; }
         .btn-reject:hover { background: #c82333; }
-        .empty-msg { text-align: center; color: #777; font-size: 18px; margin-top: 50px; }
+        
+        .empty-msg { text-align: center; color: #777; font-size: 16px; margin-top: 20px; padding: 20px; background: #e9ecef; border-radius: 8px;}
     </style>
 </head>
 <body>
@@ -26,27 +34,37 @@
 <div class="container">
     <div class="header">
         <h2>🛠️ Admin Panel - Sarmaya Saathi</h2>
-        <p>Manage Pending Withdrawals</p>
+        <p>Manage Deposits & Withdrawals</p>
     </div>
 
-    <div id="requests-container">
-        <div class="empty-msg">⏳ Loading pending requests...</div>
+    <!-- DEPOSIT SECTION -->
+    <h3 class="section-title">📥 Pending Deposits (Add Money)</h3>
+    <div id="deposits-container">
+        <div class="empty-msg">⏳ Loading deposits...</div>
+    </div>
+
+    <!-- WITHDRAWAL SECTION -->
+    <h3 class="section-title">📤 Pending Withdrawals (Payouts)</h3>
+    <div id="withdrawals-container">
+        <div class="empty-msg">⏳ Loading withdrawals...</div>
     </div>
 </div>
 
 <script>
-    // Dhyan rakhein ki ye URL aapke backend API ka ho
-    const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
+    const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; // Backend URL
 
-    async function loadRequests() {
-        const container = document.getElementById('requests-container');
+    // ==========================================
+    // 1. LOAD WITHDRAWALS
+    // ==========================================
+    async function loadWithdrawals() {
+        const container = document.getElementById('withdrawals-container');
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`);
             const data = await response.json();
 
             if (data.success) {
                 if (data.requests.length === 0) {
-                    container.innerHTML = '<div class="empty-msg">✅ All clear! No pending withdrawal requests.</div>';
+                    container.innerHTML = '<div class="empty-msg">✅ No pending withdrawal requests.</div>';
                     return;
                 }
 
@@ -54,18 +72,17 @@
                 data.requests.forEach(req => {
                     const date = new Date(req.created_at).toLocaleString();
                     container.innerHTML += `
-                        <div class="card">
+                        <div class="card withdraw">
                             <div class="info">
                                 <h3>User: ${req.name}</h3>
                                 <p><strong>Mobile:</strong> +91 ${req.mobile_number}</p>
-                                <p><strong>Amount:</strong> <span style="color: #28a745; font-weight:bold;">$${req.amount}</span></p>
-                                <p><strong>Method:</strong> ${req.payment_method}</p>
-                                <p><strong>Details (UPI/Bank):</strong> <span style="background:#eee; padding:2px 5px; border-radius:3px;">${req.payment_details}</span></p>
+                                <p><strong>Amount:</strong> <span style="color: #dc3545; font-weight:bold;">-$${req.amount}</span></p>
+                                <p><strong>Method:</strong> ${req.payment_method} | <strong>Details:</strong> <span style="background:#eee; padding:2px 5px;">${req.payment_details}</span></p>
                                 <p style="font-size:12px; color:#999;">📅 ${date}</p>
                             </div>
                             <div class="actions">
-                                <button class="btn-approve" onclick="handleAction(${req.id}, 'approve')">✔️ Approve</button>
-                                <button class="btn-reject" onclick="handleAction(${req.id}, 'reject')">❌ Reject</button>
+                                <button class="btn-approve" onclick="handleWithdrawAction(${req.id}, 'approve')">✔️ Paid & Approve</button>
+                                <button class="btn-reject" onclick="handleWithdrawAction(${req.id}, 'reject')">❌ Reject & Refund</button>
                             </div>
                         </div>
                     `;
@@ -76,34 +93,79 @@
         }
     }
 
-    async function handleAction(id, action) {
-        const confirmMsg = action === 'approve' 
-            ? "Are you sure you have paid the user and want to APPROVE?" 
-            : "Are you sure you want to REJECT? Amount will be refunded to user.";
-        
-        if (!confirm(confirmMsg)) return;
-
+    async function handleWithdrawAction(id, action) {
+        if (!confirm(`Are you sure you want to ${action.toUpperCase()} this withdrawal?`)) return;
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdraw/${action}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ withdrawal_id: id })
             });
-
             const data = await response.json();
+            alert(data.success ? "✅ " + data.message : "⚠️ Error: " + data.error);
+            loadWithdrawals(); 
+        } catch (error) { alert("⚠️ Server connection failed!"); }
+    }
+
+    // ==========================================
+    // 2. LOAD DEPOSITS
+    // ==========================================
+    async function loadDeposits() {
+        const container = document.getElementById('deposits-container');
+        try {
+            const response = await fetch(`${SERVER_URL}/api/admin/deposits`);
+            const data = await response.json();
+
             if (data.success) {
-                alert("✅ " + data.message);
-                loadRequests(); // Refresh the list instantly
-            } else {
-                alert("⚠️ Error: " + data.error);
+                if (data.requests.length === 0) {
+                    container.innerHTML = '<div class="empty-msg">✅ No pending deposit requests.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                data.requests.forEach(req => {
+                    const date = new Date(req.created_at).toLocaleString();
+                    container.innerHTML += `
+                        <div class="card deposit">
+                            <div class="info">
+                                <h3>User: ${req.name}</h3>
+                                <p><strong>Mobile:</strong> +91 ${req.mobile_number}</p>
+                                <p><strong>Amount:</strong> <span style="color: #28a745; font-weight:bold;">+$${req.amount}</span></p>
+                                <p><strong>Method:</strong> ${req.payment_method} | <strong>UTR/Txn ID:</strong> <span style="background:#fff3cd; padding:2px 5px; border:1px solid #ffeeba;">${req.utr_number}</span></p>
+                                <p style="font-size:12px; color:#999;">📅 ${date}</p>
+                            </div>
+                            <div class="actions">
+                                <button class="btn-approve" onclick="handleDepositAction(${req.id}, 'approve')">✔️ Payment Received</button>
+                                <button class="btn-reject" onclick="handleDepositAction(${req.id}, 'reject')">❌ Fake/Reject</button>
+                            </div>
+                        </div>
+                    `;
+                });
             }
         } catch (error) {
-            alert("⚠️ Server connection failed!");
+            container.innerHTML = '<div class="empty-msg" style="color:red;">⚠️ Error connecting to server.</div>';
         }
     }
 
-    // Page load hote hi data mangwao
-    window.onload = loadRequests;
+    async function handleDepositAction(id, action) {
+        if (!confirm(`Are you sure you want to ${action.toUpperCase()} this deposit?`)) return;
+        try {
+            const response = await fetch(`${SERVER_URL}/api/admin/deposit/${action}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ deposit_id: id })
+            });
+            const data = await response.json();
+            alert(data.success ? "✅ " + data.message : "⚠️ Error: " + data.error);
+            loadDeposits(); 
+        } catch (error) { alert("⚠️ Server connection failed!"); }
+    }
+
+    // Load both sections when page opens
+    window.onload = () => {
+        loadWithdrawals();
+        loadDeposits();
+    };
 </script>
 
 </body>
