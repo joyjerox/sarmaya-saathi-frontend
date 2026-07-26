@@ -692,19 +692,26 @@ function closeWithdrawalModal() {
 async function submitWithdrawal(event) {
     event.preventDefault(); // Page refresh hone se rokein
     
-    // NAYA FIX: parseFloat lagaya gaya hai taki amount number me convert ho
-    const amount = parseFloat(document.getElementById('withdraw-amount').value);
-    const method = document.getElementById('withdraw-method').value;
-    const details = document.getElementById('withdraw-details').value;
     const messageBox = document.getElementById('withdraw-message');
     
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
+    // NAYA: Button click hote hi turant UI update hoga
     messageBox.style.color = '#007bff';
-    messageBox.innerText = 'Processing request...';
-
+    messageBox.style.display = 'block';
+    messageBox.innerText = '⏳ Processing request... Please wait.';
+    
     try {
+        const amount = parseFloat(document.getElementById('withdraw-amount').value);
+        const method = document.getElementById('withdraw-method').value;
+        const details = document.getElementById('withdraw-details').value;
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+            messageBox.style.color = '#dc3545';
+            messageBox.innerText = 'Authentication error. Please login again.';
+            return;
+        }
+
+        // Backend API call
         const response = await fetch(`${API_BASE_URL}/api/withdraw`, {
             method: 'POST',
             headers: {
@@ -712,31 +719,30 @@ async function submitWithdrawal(event) {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                amount: amount, // ab ye number format me jayega
+                amount: amount,
                 payment_method: method,
                 payment_details: details
             })
         });
         
         const data = await response.json();
-        console.log("Withdrawal Response:", data); // Check karne ke liye
         
         if (data.success) {
-            messageBox.style.color = '#28a745';
-            messageBox.innerText = data.message;
+            messageBox.style.color = '#28a745'; // Green color for success
+            messageBox.innerText = '✅ ' + data.message;
             
-            // 2 second baad modal band karein aur dashboard refresh karein
+            // 2 second baad modal close karein aur balance update karein
             setTimeout(() => {
                 closeWithdrawalModal();
-                loadDashboard(); // Balance update karne ke liye
+                loadDashboard(); 
             }, 2000);
         } else {
-            messageBox.style.color = '#dc3545';
-            messageBox.innerText = data.error || "Koi error aayi hai, details check karein.";
+            messageBox.style.color = '#dc3545'; // Red color for error
+            messageBox.innerText = '❌ ' + (data.error || "Request failed.");
         }
     } catch (error) {
         console.error("Withdrawal error:", error);
         messageBox.style.color = '#dc3545';
-        messageBox.innerText = "Server connection error.";
+        messageBox.innerText = '❌ Server connection error. Please try again.';
     }
 }
