@@ -93,7 +93,21 @@
                     <p id="profile-email" style="color: #555; font-size: 13px; margin-bottom: 5px;">email@example.com</p>
                 </div>
                 
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Deposit History API pending')">💰 Deposit History</button>
+                <!-- ================= TRANSACTION HISTORY OVERLAY ================= -->
+<div id="history-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
+    <div style="width: 90%; max-height: 85vh; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="color: #0A192F;">Transaction History</h3>
+            <span onclick="closeHistoryModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
+        </div>
+        <div id="history-list" style="overflow-y: auto; flex-grow: 1; max-height: 60vh;">
+            <p style="text-align: center; color: #666; font-size: 14px;">Loading...</p>
+        </div>
+    </div>
+</div>
+                
+                <!-- Purana Button hata kar ye lagayein -->
+<button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openHistoryModal()">💰 Transaction History</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Withdrawal History API pending')">🏦 Withdrawal History</button>
                 <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="openReferralScreen()">🤝 Refer & Earn Teams</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System API pending')">🎧 Customer Support</button>

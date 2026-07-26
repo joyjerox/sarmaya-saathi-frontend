@@ -405,6 +405,74 @@ async function addFunds() {
 }
 
 // ==========================================
+// Transaction History Logic
+// ==========================================
+
+function openHistoryModal() {
+    closeProfile(); // Profile menu band karein
+    document.getElementById('history-modal').style.display = 'block';
+    fetchTransactionHistory(); // API call karein
+}
+
+function closeHistoryModal() {
+    document.getElementById('history-modal').style.display = 'none';
+}
+
+async function fetchTransactionHistory() {
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">Loading transactions...</p>';
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/transactions`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (data.transactions.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px; margin-top: 20px;">No transactions found.</p>';
+                return;
+            }
+
+            let html = '';
+            data.transactions.forEach(tx => {
+                // Date ko format karein
+                const date = new Date(tx.created_at).toLocaleDateString('en-GB'); 
+                
+                // Deposit/Commission ke liye Green, Withdrawal ke liye Red
+                const isPositive = (tx.transaction_type === 'Deposit' || tx.transaction_type === 'Commission');
+                const color = isPositive ? '#28a745' : '#dc3545';
+                const sign = isPositive ? '+' : '-';
+                
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong style="color: #333; font-size: 14px;">${tx.transaction_type}</strong>
+                            <p style="color: #777; font-size: 12px; margin: 3px 0 0 0;">${date} • ${tx.description || ''}</p>
+                        </div>
+                        <div style="color: ${color}; font-weight: bold; font-size: 15px;">
+                            ${sign}$${parseFloat(tx.amount).toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+            historyList.innerHTML = html;
+        } else {
+            historyList.innerHTML = '<p style="text-align: center; color: red; font-size: 14px;">Failed to load history.</p>';
+        }
+    } catch (error) {
+        console.error("Error fetching history:", error);
+        historyList.innerHTML = '<p style="text-align: center; color: red; font-size: 14px;">Server connection error.</p>';
+    }
+}
+
+// ==========================================
 // Dashboard Load (UPDATED for Referral Earnings)
 // ==========================================
 async function loadDashboard() {
