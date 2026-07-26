@@ -3,29 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Sarmaya Saathi</title>
+    <title>Secure Admin Dashboard - Sarmaya Saathi</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .header { background: #0A192F; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .container { max-width: 900px; margin: auto; }
-        
         .section-title { color: #0A192F; border-bottom: 2px solid #FFD700; padding-bottom: 5px; margin-top: 30px; }
-        
         .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .card.withdraw { border-left: 5px solid #dc3545; } /* Red for out */
-        .card.deposit { border-left: 5px solid #28a745; } /* Green for in */
-        
+        .card.withdraw { border-left: 5px solid #dc3545; } 
+        .card.deposit { border-left: 5px solid #28a745; } 
         .info { flex: 1; min-width: 250px; }
         .info h3 { margin: 0 0 5px 0; color: #333; font-size: 18px; }
         .info p { margin: 3px 0; color: #555; font-size: 14px; }
         .actions { display: flex; gap: 10px; margin-top: 10px; }
-        
         button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
         .btn-approve { background: #28a745; }
         .btn-approve:hover { background: #218838; }
         .btn-reject { background: #dc3545; }
         .btn-reject:hover { background: #c82333; }
-        
         .empty-msg { text-align: center; color: #777; font-size: 16px; margin-top: 20px; padding: 20px; background: #e9ecef; border-radius: 8px;}
     </style>
 </head>
@@ -33,17 +28,15 @@
 
 <div class="container">
     <div class="header">
-        <h2>🛠️ Admin Panel - Sarmaya Saathi</h2>
+        <h2>🛠️ Secure Admin Panel - Sarmaya Saathi</h2>
         <p>Manage Deposits & Withdrawals</p>
     </div>
 
-    <!-- DEPOSIT SECTION -->
     <h3 class="section-title">📥 Pending Deposits (Add Money)</h3>
     <div id="deposits-container">
         <div class="empty-msg">⏳ Loading deposits...</div>
     </div>
 
-    <!-- WITHDRAWAL SECTION -->
     <h3 class="section-title">📤 Pending Withdrawals (Payouts)</h3>
     <div id="withdrawals-container">
         <div class="empty-msg">⏳ Loading withdrawals...</div>
@@ -51,9 +44,11 @@
 </div>
 
 <script>
-    const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; // Backend URL
+    const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; 
 
-    // --- NEW SECURITY LAYER ---
+    // ==========================================
+    // 🔒 SECURITY LAYER: ADMIN PASSWORD PROMPT
+    // ==========================================
     const ADMIN_PASS = prompt("🔒 Enter Admin Password to access this page:");
     
     if (!ADMIN_PASS || ADMIN_PASS === "") {
@@ -67,7 +62,10 @@
     async function loadWithdrawals() {
         const container = document.getElementById('withdrawals-container');
         try {
-            const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`);
+            const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`, {
+                method: 'GET',
+                headers: { 'admin-secret': ADMIN_PASS } // Backend ko password bheja ja raha hai
+            });
             const data = await response.json();
 
             if (data.success) {
@@ -95,6 +93,8 @@
                         </div>
                     `;
                 });
+            } else {
+                container.innerHTML = `<div class="empty-msg" style="color:red;">⛔ ${data.error}</div>`;
             }
         } catch (error) {
             container.innerHTML = '<div class="empty-msg" style="color:red;">⚠️ Error connecting to server.</div>';
@@ -107,9 +107,9 @@
             const response = await fetch(`${SERVER_URL}/api/admin/withdraw/${action}`, {
                 method: 'POST',
                 headers: { 
-        'Content-Type': 'application/json',
-        'admin-secret': ADMIN_PASS // Naya header add kiya
-    }
+                    'Content-Type': 'application/json',
+                    'admin-secret': ADMIN_PASS // Password here too
+                },
                 body: JSON.stringify({ withdrawal_id: id })
             });
             const data = await response.json();
@@ -124,7 +124,10 @@
     async function loadDeposits() {
         const container = document.getElementById('deposits-container');
         try {
-            const response = await fetch(`${SERVER_URL}/api/admin/deposits`);
+            const response = await fetch(`${SERVER_URL}/api/admin/deposits`, {
+                method: 'GET',
+                headers: { 'admin-secret': ADMIN_PASS } // Secure Header
+            });
             const data = await response.json();
 
             if (data.success) {
@@ -152,6 +155,8 @@
                         </div>
                     `;
                 });
+            } else {
+                container.innerHTML = `<div class="empty-msg" style="color:red;">⛔ ${data.error}</div>`;
             }
         } catch (error) {
             container.innerHTML = '<div class="empty-msg" style="color:red;">⚠️ Error connecting to server.</div>';
@@ -164,9 +169,9 @@
             const response = await fetch(`${SERVER_URL}/api/admin/deposit/${action}`, {
                 method: 'POST',
                 headers: { 
-        'Content-Type': 'application/json',
-        'admin-secret': ADMIN_PASS // Naya header add kiya
-    }
+                    'Content-Type': 'application/json',
+                    'admin-secret': ADMIN_PASS // Secure Header
+                },
                 body: JSON.stringify({ deposit_id: id })
             });
             const data = await response.json();
