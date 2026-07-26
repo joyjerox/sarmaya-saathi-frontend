@@ -95,7 +95,8 @@
                 
                 <!-- Purana Button hata kar ye lagayein -->
 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openHistoryModal()">💰 Transaction History</button>
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Withdrawal History API pending')">🏦 Withdrawal History</button>
+                <!-- Purana button hatakar ye lagayein -->
+<button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openWithdrawalModal()">🏦 Withdraw Funds</button>
                 <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="openReferralScreen()">🤝 Refer & Earn Teams</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System API pending')">🎧 Customer Support</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Change Password Form pending')">🔒 Change Password</button>
@@ -115,6 +116,40 @@
         <div id="history-list" style="overflow-y: auto; flex-grow: 1; max-height: 60vh;">
             <p style="text-align: center; color: #666; font-size: 14px;">Loading...</p>
         </div>
+    </div>
+</div>
+
+<!-- ================= WITHDRAWAL MODAL ================= -->
+<div id="withdrawal-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
+    <div style="width: 90%; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="color: #0A192F;">Withdraw Funds</h3>
+            <span onclick="closeWithdrawalModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
+        </div>
+        
+        <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 14px; color: #333; font-weight: bold;">Amount ($):</label>
+                <input type="number" id="withdraw-amount" required min="1" step="0.01" placeholder="Enter amount to withdraw" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 14px; color: #333; font-weight: bold;">Payment Method:</label>
+                <select id="withdraw-method" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                    <option value="">Select Method</option>
+                    <option value="UPI">UPI Transfer</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 14px; color: #333; font-weight: bold;">Payment Details:</label>
+                <input type="text" id="withdraw-details" required placeholder="Enter UPI ID or Bank A/c No." style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+            </div>
+            
+            <button type="submit" class="primary-btn" style="background-color: #007bff; color: white; width: 100%;">Submit Request</button>
+            <p id="withdraw-message" style="text-align: center; font-size: 13px; margin-top: 15px; font-weight: bold;"></p>
+        </form>
     </div>
 </div>
 

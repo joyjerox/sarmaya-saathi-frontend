@@ -673,3 +673,68 @@ function logoutUser() {
 document.querySelectorAll('.profile-icon').forEach(icon => {
     icon.addEventListener('click', openProfile);
 });
+
+// ==========================================
+// Withdrawal Logic
+// ==========================================
+
+function openWithdrawalModal() {
+    closeProfile(); // Profile menu band karein
+    document.getElementById('withdrawal-modal').style.display = 'block';
+    document.getElementById('withdraw-message').innerText = ''; // Purana message clear karein
+    document.getElementById('withdrawalForm').reset(); // Form clear karein
+}
+
+function closeWithdrawalModal() {
+    document.getElementById('withdrawal-modal').style.display = 'none';
+}
+
+async function submitWithdrawal(event) {
+    event.preventDefault(); // Page refresh hone se rokein
+    
+    const amount = document.getElementById('withdraw-amount').value;
+    const method = document.getElementById('withdraw-method').value;
+    const details = document.getElementById('withdraw-details').value;
+    const messageBox = document.getElementById('withdraw-message');
+    
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    messageBox.style.color = '#007bff';
+    messageBox.innerText = 'Processing request...';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/withdraw`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                amount: amount,
+                payment_method: method,
+                payment_details: details
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            messageBox.style.color = '#28a745';
+            messageBox.innerText = data.message;
+            
+            // 2 second baad modal band karein aur dashboard refresh karein
+            setTimeout(() => {
+                closeWithdrawalModal();
+                loadDashboard(); // Taki update hua wallet balance dikh jaye
+            }, 2000);
+        } else {
+            messageBox.style.color = '#dc3545';
+            messageBox.innerText = data.error;
+        }
+    } catch (error) {
+        console.error("Withdrawal error:", error);
+        messageBox.style.color = '#dc3545';
+        messageBox.innerText = "Server connection error.";
+    }
+}
