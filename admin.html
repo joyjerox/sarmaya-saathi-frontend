@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Sarmaya Saathi</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .header { background: #0A192F; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-left: 5px solid #FFD700; }
+        .info { flex: 1; min-width: 250px; }
+        .info h3 { margin: 0 0 5px 0; color: #333; font-size: 18px; }
+        .info p { margin: 3px 0; color: #555; font-size: 14px; }
+        .actions { display: flex; gap: 10px; margin-top: 10px; }
+        button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        .btn-approve { background: #28a745; }
+        .btn-approve:hover { background: #218838; }
+        .btn-reject { background: #dc3545; }
+        .btn-reject:hover { background: #c82333; }
+        .empty-msg { text-align: center; color: #777; font-size: 18px; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>🛠️ Admin Panel - Sarmaya Saathi</h2>
+        <p>Manage Pending Withdrawals</p>
+    </div>
+
+    <div id="requests-container">
+        <div class="empty-msg">⏳ Loading pending requests...</div>
+    </div>
+</div>
+
+<script>
+    // Dhyan rakhein ki ye URL aapke backend API ka ho
+    const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
+
+    async function loadRequests() {
+        const container = document.getElementById('requests-container');
+        try {
+            const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`);
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.requests.length === 0) {
+                    container.innerHTML = '<div class="empty-msg">✅ All clear! No pending withdrawal requests.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                data.requests.forEach(req => {
+                    const date = new Date(req.created_at).toLocaleString();
+                    container.innerHTML += `
+                        <div class="card">
+                            <div class="info">
+                                <h3>User: ${req.name}</h3>
+                                <p><strong>Mobile:</strong> +91 ${req.mobile_number}</p>
+                                <p><strong>Amount:</strong> <span style="color: #28a745; font-weight:bold;">$${req.amount}</span></p>
+                                <p><strong>Method:</strong> ${req.payment_method}</p>
+                                <p><strong>Details (UPI/Bank):</strong> <span style="background:#eee; padding:2px 5px; border-radius:3px;">${req.payment_details}</span></p>
+                                <p style="font-size:12px; color:#999;">📅 ${date}</p>
+                            </div>
+                            <div class="actions">
+                                <button class="btn-approve" onclick="handleAction(${req.id}, 'approve')">✔️ Approve</button>
+                                <button class="btn-reject" onclick="handleAction(${req.id}, 'reject')">❌ Reject</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        } catch (error) {
+            container.innerHTML = '<div class="empty-msg" style="color:red;">⚠️ Error connecting to server.</div>';
+        }
+    }
+
+    async function handleAction(id, action) {
+        const confirmMsg = action === 'approve' 
+            ? "Are you sure you have paid the user and want to APPROVE?" 
+            : "Are you sure you want to REJECT? Amount will be refunded to user.";
+        
+        if (!confirm(confirmMsg)) return;
+
+        try {
+            const response = await fetch(`${SERVER_URL}/api/admin/withdraw/${action}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ withdrawal_id: id })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert("✅ " + data.message);
+                loadRequests(); // Refresh the list instantly
+            } else {
+                alert("⚠️ Error: " + data.error);
+            }
+        } catch (error) {
+            alert("⚠️ Server connection failed!");
+        }
+    }
+
+    // Page load hote hi data mangwao
+    window.onload = loadRequests;
+</script>
+
+</body>
+</html>
