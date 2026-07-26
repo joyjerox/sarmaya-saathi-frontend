@@ -364,47 +364,8 @@ async function createCustomPool() {
 }
 
 // ==========================================
-// Wallet Deposit Logic (Add Funds)
+// Wallet Deposit Logic (Add Funds) - FIXED
 // ==========================================
-async function addFunds() {
-    const amount = prompt("Enter amount to add to your wallet:");
-    
-    if (!amount || isNaN(amount) || amount <= 0) {
-        alert("Please enter a valid amount.");
-        return;
-    }
-
-    const token = localStorage.getItem('sarmaya_token');
-    if (!token) {
-        alert("Please login first.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${SERVER_URL}/api/add-funds`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ amount: parseFloat(amount) })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            alert(`🎉 Success! New Balance: $${data.new_balance}`);
-            localStorage.setItem('sarmaya_balance', data.new_balance);
-            loadDashboard(); 
-        } else {
-            alert("⚠️ Error: " + data.error);
-        }
-    } catch (error) {
-        console.error("Error adding funds:", error);
-        alert("⚠️ Backend connection failed!");
-    }
-}
-
-// Modal open/close logic
 function openDepositModal() {
     document.getElementById('depositModal').style.display = 'block';
 }
@@ -415,11 +376,12 @@ function closeDepositModal() {
     document.getElementById('depositUtr').value = '';
 }
 
-// Deposit Submit Logic
 async function submitDeposit() {
     const amount = document.getElementById('depositAmount').value;
     const utr = document.getElementById('depositUtr').value;
-    const token = localStorage.getItem('token'); // User ka login token
+    
+    // FIX 1: Token variable ka naam 'sarmaya_token' hona chahiye
+    const token = localStorage.getItem('sarmaya_token'); 
 
     if (!amount || amount <= 0 || !utr) {
         alert("⚠️ Please enter a valid amount and UTR number.");
@@ -432,11 +394,12 @@ async function submitDeposit() {
     }
 
     try {
-        const response = await fetch('https://sarmaya-saathi-api.onrender.com/api/deposit', {
+        // FIX 2: SERVER_URL variable ka use kiya
+        const response = await fetch(`${SERVER_URL}/api/deposit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Token bhejna zaroori hai
+                'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({
                 amount: parseFloat(amount),
@@ -450,7 +413,8 @@ async function submitDeposit() {
         if (data.success) {
             alert("✅ " + data.message);
             closeDepositModal();
-            // Yahan chaho to wallet balance/history refresh karne ka function call kar sakte ho
+            // Optional: Request bhejne ke baad history wagarah load karwane ke liye
+            // loadDashboard();
         } else {
             alert("⚠️ Error: " + data.error);
         }
@@ -460,10 +424,10 @@ async function submitDeposit() {
     }
 }
 
+
 // ==========================================
 // Transaction History Logic
 // ==========================================
-
 function openHistoryModal() {
     closeProfile(); // Profile menu band karein
     document.getElementById('history-modal').style.display = 'block';
@@ -478,7 +442,6 @@ async function fetchTransactionHistory() {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">Loading transactions...</p>';
 
-    // FIX: Changed from 'token' to 'sarmaya_token'
     const token = localStorage.getItem('sarmaya_token');
     if (!token) {
         historyList.innerHTML = '<p style="text-align: center; color: red; font-size: 14px;">Authentication error.</p>';
@@ -486,7 +449,6 @@ async function fetchTransactionHistory() {
     }
 
     try {
-        // FIX: Changed from API_BASE_URL to SERVER_URL
         const response = await fetch(`${SERVER_URL}/api/transactions`, {
             method: 'GET',
             headers: {
@@ -503,11 +465,9 @@ async function fetchTransactionHistory() {
 
             let html = '';
             data.transactions.forEach(tx => {
-                // Date ko format karein
                 const date = new Date(tx.created_at).toLocaleDateString('en-GB'); 
                 
-                // Deposit/Commission ke liye Green, Withdrawal ke liye Red
-                const isPositive = (tx.transaction_type === 'Deposit' || tx.transaction_type === 'Commission');
+                const isPositive = (tx.transaction_type === 'Deposit' || tx.transaction_type === 'Commission' || tx.transaction_type === 'Refund');
                 const color = isPositive ? '#28a745' : '#dc3545';
                 const sign = isPositive ? '+' : '-';
                 
@@ -534,13 +494,13 @@ async function fetchTransactionHistory() {
 }
 
 // ==========================================
-// Dashboard Load (UPDATED for Referral Earnings)
+// Dashboard Load 
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
     let balance = localStorage.getItem('sarmaya_balance') || 0;
     
-    document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${balance}`);
+    document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(balance).toFixed(2)}`);
     
     if (!userId) return;
 
@@ -555,12 +515,10 @@ async function loadDashboard() {
         if (data.success) {
             document.querySelector('.stat-box p').innerText = `${data.active_groups} Active`;
             localStorage.setItem('sarmaya_balance', data.wallet_balance);
-            document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${data.wallet_balance}`);
+            document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(data.wallet_balance).toFixed(2)}`);
             
-            // NAYA: Dashboard me referral earnings show karna
             const refEarningsDisplay = document.getElementById('dashboard-referral-earnings');
             if (refEarningsDisplay) {
-                // Is se amount hamesha decimal me sahi format hoga (e.g., $10.50)
                 refEarningsDisplay.innerText = `$${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
             }
             
@@ -619,7 +577,7 @@ async function fetchMyPools() {
 }
 
 // ==========================================
-// Profile & Referral Fetch Logic (UPDATED)
+// Profile & Referral Fetch Logic
 // ==========================================
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
@@ -638,7 +596,6 @@ async function openProfile() {
             if(data.success) {
                 const userData = data.user_data;
                 
-                // UI Update logic (HTML IDs match karne chahiye)
                 const profileName = document.getElementById('profile-name');
                 if (profileName) profileName.innerText = userData.name;
                 
@@ -648,7 +605,6 @@ async function openProfile() {
                 const profileMobile = document.getElementById('profile-mobile');
                 if (profileMobile) profileMobile.innerText = "+91 " + userData.mobile_number;
                 
-                // NAYA: Unique ID Generate Karke Show Karein (e.g., SS-1001)
                 const uniqueId = "SS-" + (1000 + parseInt(userData.id)); 
                 const profileUid = document.getElementById('profile-uid');
                 if (profileUid) profileUid.innerText = "User ID: " + uniqueId;
@@ -663,7 +619,6 @@ function closeProfile() {
     document.getElementById('profile-menu').style.display = 'none';
 }
 
-// Fetch and Load Referral Data
 async function loadReferralData() {
     const token = localStorage.getItem('sarmaya_token');
     if (!token) return;
@@ -738,7 +693,6 @@ document.querySelectorAll('.profile-icon').forEach(icon => {
 // ==========================================
 // Withdrawal Logic
 // ==========================================
-
 function openWithdrawalModal() {
     closeProfile(); // Profile menu band karein
     document.getElementById('withdrawal-modal').style.display = 'block';
@@ -755,7 +709,6 @@ async function submitWithdrawal(event) {
     
     const messageBox = document.getElementById('withdraw-message');
     
-    // NAYA: Button click hote hi turant UI update hoga
     messageBox.style.color = '#007bff';
     messageBox.style.display = 'block';
     messageBox.innerText = '⏳ Processing request... Please wait.';
@@ -765,7 +718,6 @@ async function submitWithdrawal(event) {
         const method = document.getElementById('withdraw-method').value;
         const details = document.getElementById('withdraw-details').value;
         
-        // FIX: Changed from 'token' to 'sarmaya_token'
         const token = localStorage.getItem('sarmaya_token');
         if (!token) {
             messageBox.style.color = '#dc3545';
@@ -773,7 +725,6 @@ async function submitWithdrawal(event) {
             return;
         }
 
-        // FIX: Changed from API_BASE_URL to SERVER_URL
         const response = await fetch(`${SERVER_URL}/api/withdraw`, {
             method: 'POST',
             headers: {
@@ -790,16 +741,15 @@ async function submitWithdrawal(event) {
         const data = await response.json();
         
         if (data.success) {
-            messageBox.style.color = '#28a745'; // Green color for success
+            messageBox.style.color = '#28a745'; 
             messageBox.innerText = '✅ ' + data.message;
             
-            // 2 second baad modal close karein aur balance update karein
             setTimeout(() => {
                 closeWithdrawalModal();
                 loadDashboard(); 
             }, 2000);
         } else {
-            messageBox.style.color = '#dc3545'; // Red color for error
+            messageBox.style.color = '#dc3545'; 
             messageBox.innerText = '❌ ' + (data.error || "Request failed.");
         }
     } catch (error) {
