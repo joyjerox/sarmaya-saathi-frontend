@@ -404,6 +404,62 @@ async function addFunds() {
     }
 }
 
+// Modal open/close logic
+function openDepositModal() {
+    document.getElementById('depositModal').style.display = 'block';
+}
+
+function closeDepositModal() {
+    document.getElementById('depositModal').style.display = 'none';
+    document.getElementById('depositAmount').value = '';
+    document.getElementById('depositUtr').value = '';
+}
+
+// Deposit Submit Logic
+async function submitDeposit() {
+    const amount = document.getElementById('depositAmount').value;
+    const utr = document.getElementById('depositUtr').value;
+    const token = localStorage.getItem('token'); // User ka login token
+
+    if (!amount || amount <= 0 || !utr) {
+        alert("⚠️ Please enter a valid amount and UTR number.");
+        return;
+    }
+
+    if (!token) {
+        alert("⚠️ You must be logged in to add money.");
+        return;
+    }
+
+    try {
+        const response = await fetch('https://sarmaya-saathi-api.onrender.com/api/deposit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Token bhejna zaroori hai
+            },
+            body: JSON.stringify({
+                amount: parseFloat(amount),
+                utr_number: utr,
+                payment_method: 'UPI'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("✅ " + data.message);
+            closeDepositModal();
+            // Yahan chaho to wallet balance/history refresh karne ka function call kar sakte ho
+        } else {
+            alert("⚠️ Error: " + data.error);
+        }
+    } catch (error) {
+        console.error("Deposit error:", error);
+        alert("⚠️ Server error. Please try again later.");
+    }
+}
+
 // ==========================================
 // Transaction History Logic
 // ==========================================
