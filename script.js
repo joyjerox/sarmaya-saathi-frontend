@@ -692,7 +692,8 @@ function closeWithdrawalModal() {
 async function submitWithdrawal(event) {
     event.preventDefault(); // Page refresh hone se rokein
     
-    const amount = document.getElementById('withdraw-amount').value;
+    // NAYA FIX: parseFloat lagaya gaya hai taki amount number me convert ho
+    const amount = parseFloat(document.getElementById('withdraw-amount').value);
     const method = document.getElementById('withdraw-method').value;
     const details = document.getElementById('withdraw-details').value;
     const messageBox = document.getElementById('withdraw-message');
@@ -711,13 +712,14 @@ async function submitWithdrawal(event) {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                amount: amount,
+                amount: amount, // ab ye number format me jayega
                 payment_method: method,
                 payment_details: details
             })
         });
         
         const data = await response.json();
+        console.log("Withdrawal Response:", data); // Check karne ke liye
         
         if (data.success) {
             messageBox.style.color = '#28a745';
@@ -726,11 +728,11 @@ async function submitWithdrawal(event) {
             // 2 second baad modal band karein aur dashboard refresh karein
             setTimeout(() => {
                 closeWithdrawalModal();
-                loadDashboard(); // Taki update hua wallet balance dikh jaye
+                loadDashboard(); // Balance update karne ke liye
             }, 2000);
         } else {
             messageBox.style.color = '#dc3545';
-            messageBox.innerText = data.error;
+            messageBox.innerText = data.error || "Koi error aayi hai, details check karein.";
         }
     } catch (error) {
         console.error("Withdrawal error:", error);
