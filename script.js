@@ -544,10 +544,17 @@ async function loadReferralData() {
 
 function openReferralScreen() {
     closeProfile();
+    
+    // NAYA FIX: Sabhi background screens ko hide karein taaki overlap na ho
     document.getElementById('dashboard-screen').style.display = 'none';
+    document.getElementById('groups-screen').style.display = 'none';
+    document.getElementById('payouts-screen').style.display = 'none';
+    document.getElementById('join-group-screen').style.display = 'none';
+    
+    // Sirf referral screen ko display karein
     document.getElementById('referral-screen').style.display = 'flex';
     
-    // NAYA: Screen khulte hi API se data mangwayein
+    // API se data mangwayein
     loadReferralData(); 
 }
 
@@ -566,7 +573,14 @@ function copyLink() {
 }
 
 function logoutUser() {
-    localStorage.clear(); 
+    // LocalStorage se specifically user ka saara private data hamesha clear karein
+    localStorage.removeItem('sarmaya_token'); 
+    localStorage.removeItem('sarmaya_user_id');
+    localStorage.removeItem('sarmaya_name');
+    localStorage.removeItem('sarmaya_mobile');
+    localStorage.removeItem('sarmaya_balance');
+    localStorage.removeItem('temp_email');
+    
     alert("Logged out successfully.");
     window.location.reload(); 
 }
