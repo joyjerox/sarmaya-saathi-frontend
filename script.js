@@ -430,9 +430,10 @@ async function loadDashboard() {
             
             // NAYA: Dashboard me referral earnings show karna
             const refEarningsDisplay = document.getElementById('dashboard-referral-earnings');
-            if (refEarningsDisplay) {
-                refEarningsDisplay.innerText = `$${data.referral_earnings}`;
-            }
+if (refEarningsDisplay) {
+    // Is se amount hamesha decimal me sahi format hoga (e.g., $10.50)
+    refEarningsDisplay.innerText = `$${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
+}
             
             fetchMyPools(); 
         }
