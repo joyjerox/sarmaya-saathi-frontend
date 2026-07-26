@@ -76,11 +76,20 @@
         </div>
 
         <!-- ================= PROFILE MENU OVERLAY ================= -->
-        <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6);">
+        <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 50;">
             <div style="width: 85%; background: white; margin: 80px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="color: #0A192F;">My Profile</h3>
                     <span onclick="closeProfile()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
+                </div>
+                
+                <!-- NAYA: Profile Details Section -->
+                <div style="text-align: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
+                    <h4 id="profile-name" style="color: #0A192F; font-size: 18px; margin-bottom: 5px;">Loading...</h4>
+                    <p id="profile-uid" style="background: #e3f2fd; color: #1565c0; display: inline-block; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; margin-bottom: 10px;">User ID: SS-XXXX</p>
+                    <p id="profile-mobile" style="color: #555; font-size: 13px; margin-bottom: 3px;">+91 0000000000</p>
+                    <p id="profile-email" style="color: #555; font-size: 13px; margin-bottom: 5px;">email@example.com</p>
                 </div>
                 
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Deposit History API pending')">💰 Deposit History</button>
@@ -150,7 +159,8 @@
 
             <div class="stats-container">
                 <div class="stat-box"><h4>My Groups</h4><p>0 Active</p></div>
-                <div class="stat-box"><h4>Referrals</h4><p>$0 Earned</p></div>
+                <!-- NAYA: ID added for referral earnings update -->
+                <div class="stat-box"><h4>Referrals</h4><p id="dashboard-referral-earnings">$0</p></div>
             </div>
             
             <div class="recent-activity">
@@ -161,7 +171,6 @@
                 </div>
             </div>
 
-            <!-- NAYA HISSA: My Joined Pools Section -->
             <div class="recent-activity" style="margin-top: 20px; padding-bottom: 80px;">
                 <h3>My Joined Pools</h3>
                 <div id="my-pools-list">

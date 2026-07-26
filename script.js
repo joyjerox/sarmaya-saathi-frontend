@@ -59,7 +59,7 @@ async function registerUser(event) {
     const mobile = document.getElementById('reg-mobile').value;
     const password = document.getElementById('reg-password').value;
     
-    // NAYA: Form se referral code uthayein (agar id 'reg-referral' exist karti hai)
+    // Form se referral code uthayein
     const refInput = document.getElementById('reg-referral');
     const referral_code = refInput ? refInput.value.trim() : ''; 
 
@@ -203,7 +203,7 @@ function switchTab(tabName) {
     document.getElementById('groups-screen').style.display = 'none';
     document.getElementById('payouts-screen').style.display = 'none';
     document.getElementById('join-group-screen').style.display = 'none'; 
-    document.getElementById('referral-screen').style.display = 'none'; // Ensure referral hides
+    document.getElementById('referral-screen').style.display = 'none'; 
     
     document.getElementById('nav-home').classList.remove('active');
     document.getElementById('nav-groups').classList.remove('active');
@@ -405,7 +405,7 @@ async function addFunds() {
 }
 
 // ==========================================
-// Dashboard Load 
+// Dashboard Load (UPDATED for Referral Earnings)
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
@@ -427,6 +427,12 @@ async function loadDashboard() {
             document.querySelector('.stat-box p').innerText = `${data.active_groups} Active`;
             localStorage.setItem('sarmaya_balance', data.wallet_balance);
             document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${data.wallet_balance}`);
+            
+            // NAYA: Dashboard me referral earnings show karna
+            const refEarningsDisplay = document.getElementById('dashboard-referral-earnings');
+            if (refEarningsDisplay) {
+                refEarningsDisplay.innerText = `$${data.referral_earnings}`;
+            }
             
             fetchMyPools(); 
         }
@@ -483,7 +489,7 @@ async function fetchMyPools() {
 }
 
 // ==========================================
-// Profile & Referral Fetch Logic (NAYA)
+// Profile & Referral Fetch Logic (UPDATED)
 // ==========================================
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
@@ -500,7 +506,22 @@ async function openProfile() {
             });
             const data = await response.json();
             if(data.success) {
-                console.log("Secure Profile Loaded:", data.user_data);
+                const userData = data.user_data;
+                
+                // UI Update logic (HTML IDs match karne chahiye)
+                const profileName = document.getElementById('profile-name');
+                if (profileName) profileName.innerText = userData.name;
+                
+                const profileEmail = document.getElementById('profile-email');
+                if (profileEmail) profileEmail.innerText = userData.email;
+                
+                const profileMobile = document.getElementById('profile-mobile');
+                if (profileMobile) profileMobile.innerText = "+91 " + userData.mobile_number;
+                
+                // NAYA: Unique ID Generate Karke Show Karein (e.g., SS-1001)
+                const uniqueId = "SS-" + (1000 + parseInt(userData.id)); 
+                const profileUid = document.getElementById('profile-uid');
+                if (profileUid) profileUid.innerText = "User ID: " + uniqueId;
             }
         } catch(error) {
             console.error("Failed to fetch secure profile data");
@@ -512,7 +533,7 @@ function closeProfile() {
     document.getElementById('profile-menu').style.display = 'none';
 }
 
-// NAYA: Fetch and Load Referral Data
+// Fetch and Load Referral Data
 async function loadReferralData() {
     const token = localStorage.getItem('sarmaya_token');
     if (!token) return;
@@ -525,14 +546,12 @@ async function loadReferralData() {
         const data = await response.json();
 
         if (data.success) {
-            // UI par Commission aur Team Size Update karein
             const walletAmountEl = document.querySelector('#referral-screen .wallet-amount');
             if(walletAmountEl) walletAmountEl.innerText = `$${data.commission_earned}`;
             
             const activityAmountEl = document.querySelector('#referral-screen .activity-amount');
             if(activityAmountEl) activityAmountEl.innerText = `${data.team_size} Members`;
             
-            // User ki unique referral link generate karke Input box me set karein
             const inviteLink = `${window.location.origin}?ref=${data.referral_code}`;
             const linkInput = document.getElementById('invite-link');
             if(linkInput) linkInput.value = inviteLink;
@@ -545,16 +564,13 @@ async function loadReferralData() {
 function openReferralScreen() {
     closeProfile();
     
-    // NAYA FIX: Sabhi background screens ko hide karein taaki overlap na ho
     document.getElementById('dashboard-screen').style.display = 'none';
     document.getElementById('groups-screen').style.display = 'none';
     document.getElementById('payouts-screen').style.display = 'none';
     document.getElementById('join-group-screen').style.display = 'none';
     
-    // Sirf referral screen ko display karein
     document.getElementById('referral-screen').style.display = 'flex';
     
-    // API se data mangwayein
     loadReferralData(); 
 }
 
@@ -573,7 +589,6 @@ function copyLink() {
 }
 
 function logoutUser() {
-    // LocalStorage se specifically user ka saara private data hamesha clear karein
     localStorage.removeItem('sarmaya_token'); 
     localStorage.removeItem('sarmaya_user_id');
     localStorage.removeItem('sarmaya_name');
