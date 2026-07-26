@@ -6,7 +6,9 @@
     <title>Secure Admin Dashboard - Sarmaya Saathi</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .header { background: #0A192F; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header { background: #0A192F; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
+        .logout-btn { position: absolute; right: 20px; top: 20px; background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .logout-btn:hover { background: #c82333; }
         .container { max-width: 900px; margin: auto; }
         .section-title { color: #0A192F; border-bottom: 2px solid #FFD700; padding-bottom: 5px; margin-top: 30px; }
         .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
@@ -28,8 +30,9 @@
 
 <div class="container">
     <div class="header">
-        <h2>🛠️ Secure Admin Panel - Sarmaya Saathi</h2>
+        <h2>🛠️ Secure Admin Panel</h2>
         <p>Manage Deposits & Withdrawals</p>
+        <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
     </div>
 
     <h3 class="section-title">📥 Pending Deposits (Add Money)</h3>
@@ -47,13 +50,19 @@
     const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; 
 
     // ==========================================
-    // 🔒 ADVANCED SECURITY: Check Admin Token
+    // 🔒 ADVANCED SECURITY: Check Admin Token First
     // ==========================================
     const adminToken = localStorage.getItem('sarmaya_admin_token');
     
-    // Agar token nahi hai, toh wapas login page par bhej do
+    // Agar token nahi mila, toh seedha login page par phek do
     if (!adminToken) {
-        window.location.href = 'admin-login.html';
+        window.location.replace('admin-login.html');
+    }
+
+    // Logout Function
+    function logoutAdmin() {
+        localStorage.removeItem('sarmaya_admin_token');
+        window.location.replace('admin-login.html');
     }
 
     // ==========================================
@@ -64,9 +73,18 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`, {
                 method: 'GET',
-                headers: { 'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
+                headers: { 
+                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
+                }
             });
             const data = await response.json();
+
+            // Agar token expire ho gaya ho ya galat ho
+            if (response.status === 401) {
+                alert("Session expired! Please login again.");
+                logoutAdmin();
+                return;
+            }
 
             if (data.success) {
                 if (data.requests.length === 0) {
@@ -108,7 +126,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
+                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
                 },
                 body: JSON.stringify({ withdrawal_id: id })
             });
@@ -126,7 +144,9 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/deposits`, {
                 method: 'GET',
-                headers: { 'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
+                headers: { 
+                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
+                }
             });
             const data = await response.json();
 
@@ -145,7 +165,7 @@
                                 <h3>User: ${req.name}</h3>
                                 <p><strong>Mobile:</strong> +91 ${req.mobile_number}</p>
                                 <p><strong>Amount:</strong> <span style="color: #28a745; font-weight:bold;">+$${req.amount}</span></p>
-                                <p><strong>Method:</strong> ${req.payment_method} | <strong>UTR/Txn ID:</strong> <span style="background:#fff3cd; padding:2px 5px; border:1px solid #ffeeba;">${req.utr_number}</span></p>
+                                <p><strong>Method:</strong> ${req.payment_method} | <strong>UTR:</strong> <span style="background:#fff3cd; padding:2px 5px; border:1px solid #ffeeba;">${req.utr_number}</span></p>
                                 <p style="font-size:12px; color:#999;">📅 ${date}</p>
                             </div>
                             <div class="actions">
@@ -170,7 +190,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
+                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
                 },
                 body: JSON.stringify({ deposit_id: id })
             });
