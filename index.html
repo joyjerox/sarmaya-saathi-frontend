@@ -82,13 +82,17 @@
             <div class="wallet-card">
                 <p>Total Wallet Balance</p>
                 <h1 class="wallet-amount" id="wallet-balance">$0.00</h1>
-                <!-- NAYA FIX: onclick ko openDepositModal() se joda gaya -->
                 <button class="add-money-btn" onclick="openDepositModal()">+ Add Funds</button>
             </div>
 
             <div class="stats-container">
-                <div class="stat-box"><h4>My Groups</h4><p>0 Active</p></div>
-                <div class="stat-box"><h4>Referrals</h4><p id="dashboard-referral-earnings">$0</p></div>
+                <!-- NAYA FIX: My Groups pe click karke My Joined Pools par scroll -->
+                <div class="stat-box" onclick="document.getElementById('joined-pools-section').scrollIntoView({ behavior: 'smooth' });" style="cursor: pointer;">
+                    <h4>My Groups</h4><p>0 Active</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Referrals</h4><p id="dashboard-referral-earnings">$0</p>
+                </div>
             </div>
             
             <div class="recent-activity">
@@ -99,7 +103,8 @@
                 </div>
             </div>
 
-            <div class="recent-activity" style="margin-top: 20px; padding-bottom: 80px;">
+            <!-- NAYA FIX: Id add ki gayi taaki scroll kaam kare -->
+            <div class="recent-activity" id="joined-pools-section" style="margin-top: 20px; padding-bottom: 80px;">
                 <h3>My Joined Pools</h3>
                 <div id="my-pools-list">
                     <p style="text-align: center; font-size: 14px; color: #666; padding: 10px;">Loading your pools...</p>
@@ -118,7 +123,7 @@
                 <button class="tab active" onclick="filterGroups('Weekly', this)">Weekly</button>
                 <button class="tab" onclick="filterGroups('Monthly', this)">Monthly</button>
                 <button class="tab" onclick="filterGroups('Quarterly', this)">Quarterly</button>
-                <button class="tab" onclick="filterGroups('Yearly', this)">Yearly</button>
+                <!-- Yearly Button Removed As Requested -->
                 <button class="tab" onclick="filterGroups('All', this)">All</button>
             </div>
 
@@ -162,7 +167,7 @@
             </div>
         </div>
 
-        <!-- 6. Payout Screen -->
+        <!-- 6. Payout Screen (Unchanged as requested) -->
         <div id="payouts-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Action Center</h3>
@@ -196,7 +201,6 @@
                     <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; text-align: center; background: #e0e0e0; font-size: 12px; margin-bottom: 0;">
                     <button class="primary-btn" onclick="copyLink()" style="width: auto; padding: 12px;">Copy</button>
                 </div>
-                <!-- Social Buttons Omitted for brevity, kept exactly same visually -->
             </div>
             <div class="recent-activity">
                 <h3>My Team Details</h3>
@@ -211,14 +215,21 @@
 
         <!-- PROFILE MENU OVERLAY -->
         <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 50;">
-            <div style="width: 85%; max-height: 80vh; overflow-y: auto; background: white; margin: 80px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <!-- NAYA FIX: CSS class use ki hai mobile scroll ke liye -->
+            <div class="profile-modal-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="color: #0A192F;">My Profile</h3>
                     <span onclick="document.getElementById('profile-menu').style.display='none'" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 
                 <div style="text-align: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                    <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
+                    <!-- NAYA FIX: Profile Image Upload -->
+                    <div class="profile-pic-container" style="text-align: center; position: relative; margin-bottom: 10px;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="profileImage" onclick="document.getElementById('imageUpload').click();" style="width: 70px; height: 70px; border-radius: 50%; cursor: pointer; border: 2px solid #FFD700; background: white; object-fit: cover;">
+                        <p style="font-size: 11px; color: #666; margin-top: 5px;">Tap to change</p>
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    </div>
+
                     <h4 id="profile-name" style="color: #0A192F; font-size: 18px; margin-bottom: 5px;">Loading...</h4>
                     <p id="profile-uid" style="background: #e3f2fd; color: #1565c0; display: inline-block; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; margin-bottom: 10px;">User ID: SS-XXXX</p>
                     <p id="profile-mobile" style="color: #555; font-size: 13px; margin-bottom: 3px;">+91 0000000000</p>
@@ -227,9 +238,11 @@
                 
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openHistoryModal()">💰 Transaction History</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openWithdrawalModal()">🏦 Withdraw Funds</button>
-                <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="openReferralScreen()">🤝 Refer & Earn Teams</button>
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System API pending')">🎧 Customer Support</button>
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Change Password Form pending')">🔒 Change Password</button>
+                
+                <!-- NAYA FIX: KYC & Change Password (Refer & Earn hataya gaya) -->
+                <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="alert('KYC System Coming Soon!')">🛡️ Complete KYC Verification</button>
+                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System Coming Soon!')">🎧 Customer Support</button>
+                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Change Password feature active in next update!')">🔒 Change Password</button>
                 
                 <button class="action-btn" style="background-color: #ffebee; color: #d32f2f; border: 1px solid #ef5350; margin-top: 10px;" onclick="logoutUser()">🚪 Logout</button>
                 <p style="text-align: center; font-size: 12px; color: #888; margin-top: 15px;">App Version 1.0.1 (Live)</p>
@@ -279,7 +292,7 @@
             </div>
         </div>
 
-        <!-- ADD MONEY / DEPOSIT MODAL (FIXED UI) -->
+        <!-- ADD MONEY / DEPOSIT MODAL -->
         <div id="depositModal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; max-width: 400px; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
@@ -287,13 +300,11 @@
                     <span onclick="closeDepositModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 
-                <!-- Admin Payment Details -->
                 <div style="background: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px;">
                     <p style="margin: 0 0 5px 0;"><strong>Step 1:</strong> Pay to this UPI ID:</p>
                     <p style="margin: 0; color: #28a745; font-weight: bold; font-size: 16px;">sarmayasaathi@upi</p>
                 </div>
 
-                <!-- Deposit Form -->
                 <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Step 2:</strong> Submit Payment Details:</p>
                 <label style="font-size: 13px; font-weight:bold;">Amount Paid ($):</label>
                 <input type="number" id="depositAmount" placeholder="Enter amount" style="width: 100%; padding: 8px; margin-top:5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
@@ -305,14 +316,30 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation Bar -->
+        <!-- Bottom Navigation Bar (NAYA FIX: Referral added) -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
-            <div class="nav-item active" id="nav-home" onclick="switchTab('home')">Home</div>
-            <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">Groups</div>
-            <div class="nav-item" id="nav-payouts" onclick="switchTab('payouts')">Payouts</div>
+            <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 Home</div>
+            <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">👥 Groups</div>
+            <div class="nav-item" id="nav-payouts" onclick="switchTab('payouts')">💰 Payouts</div>
+            <!-- Referral Icon in Bottom Bar -->
+            <div class="nav-item" id="nav-referrals" onclick="openReferralScreen()">🤝 Refer</div>
         </div>
 
     </div>
+    
+    <!-- Image Preview Script -->
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('profileImage');
+                output.src = reader.result;
+            }
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
