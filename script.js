@@ -12,7 +12,7 @@ setTimeout(() => {
 }, 3000); 
 
 // ==========================================
-// 3. NAYA: URL Referral Capture (Auto-fill)
+// 3. URL Referral Capture (Auto-fill)
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -28,28 +28,45 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// Screen Switcher (Toggle Log In / Sign Up / OTP)
+// Screen Switcher (Toggle Log In / Sign Up / OTP / Forgot / Reset)
 // ==========================================
 function toggleScreens(screenName) {
-    const signupScreen = document.getElementById('signup-section');
-    const loginScreen = document.getElementById('login-section');
-    const otpScreen = document.getElementById('otp-section');
+    // Sabhi screens ko pehle hide karein
+    const screens = ['signup', 'login', 'otp', 'forgot', 'reset'];
+    screens.forEach(screen => {
+        const el = document.getElementById(`${screen}-section`);
+        if (el) el.style.display = 'none';
+    });
 
-    signupScreen.style.display = 'none';
-    loginScreen.style.display = 'none';
-    otpScreen.style.display = 'none';
-
-    if (screenName === 'login') {
-        loginScreen.style.display = 'block';
-    } else if (screenName === 'signup') {
-        signupScreen.style.display = 'block';
-    } else if (screenName === 'otp') {
-        otpScreen.style.display = 'block';
-    }
+    // Jo screen call hui hai sirf use show karein
+    const activeScreen = document.getElementById(`${screenName}-section`);
+    if (activeScreen) activeScreen.style.display = 'block';
 }
 
 // ==========================================
-// UPDATED: User Signup Logic (With Referral)
+// FORGOT & RESET PASSWORD LOGIC
+// ==========================================
+function sendForgotOTP(event) {
+    event.preventDefault();
+    const mobile = document.getElementById('forgot-mobile').value;
+    
+    // Yahan API call aayegi OTP bhejte waqt (Future Update)
+    alert(`OTP sent to +91 ${mobile}`);
+    toggleScreens('reset'); // OTP bhejne ke baad Reset screen kholein
+}
+
+function resetPassword(event) {
+    event.preventDefault();
+    const otp = document.getElementById('reset-otp').value;
+    const newPwd = document.getElementById('reset-new-pwd').value;
+    
+    // Yahan Backend par OTP verify karke password reset ki API call aayegi (Future Update)
+    alert('Password reset successful! Please login with your new password.');
+    toggleScreens('login');
+}
+
+// ==========================================
+// User Signup Logic (With Referral)
 // ==========================================
 async function registerUser(event) {
     event.preventDefault(); 
@@ -208,6 +225,9 @@ function switchTab(tabName) {
     document.getElementById('nav-home').classList.remove('active');
     document.getElementById('nav-groups').classList.remove('active');
     document.getElementById('nav-payouts').classList.remove('active');
+    
+    const navReferrals = document.getElementById('nav-referrals');
+    if (navReferrals) navReferrals.classList.remove('active');
 
     if(tabName === 'home') {
         document.getElementById('dashboard-screen').style.display = 'flex';
@@ -364,7 +384,7 @@ async function createCustomPool() {
 }
 
 // ==========================================
-// Wallet Deposit Logic (Add Funds) - FIXED
+// Wallet Deposit Logic (Add Funds)
 // ==========================================
 function openDepositModal() {
     document.getElementById('depositModal').style.display = 'block';
@@ -380,7 +400,6 @@ async function submitDeposit() {
     const amount = document.getElementById('depositAmount').value;
     const utr = document.getElementById('depositUtr').value;
     
-    // FIX 1: Token variable ka naam 'sarmaya_token' hona chahiye
     const token = localStorage.getItem('sarmaya_token'); 
 
     if (!amount || amount <= 0 || !utr) {
@@ -394,7 +413,6 @@ async function submitDeposit() {
     }
 
     try {
-        // FIX 2: SERVER_URL variable ka use kiya
         const response = await fetch(`${SERVER_URL}/api/deposit`, {
             method: 'POST',
             headers: {
@@ -413,8 +431,6 @@ async function submitDeposit() {
         if (data.success) {
             alert("✅ " + data.message);
             closeDepositModal();
-            // Optional: Request bhejne ke baad history wagarah load karwane ke liye
-            // loadDashboard();
         } else {
             alert("⚠️ Error: " + data.error);
         }
@@ -507,10 +523,10 @@ async function loadDashboard() {
 
     try {
         const response = await fetch(`${SERVER_URL}/api/dashboard`, {
-            method: 'GET', // POST ki jagah ab humein secure GET use karna hai
+            method: 'GET',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Token bhej rahe hain
+                'Authorization': `Bearer ${token}` 
             }
         });
         const data = await response.json();
@@ -580,7 +596,7 @@ async function fetchMyPools() {
 }
 
 // ==========================================
-// Profile & Referral Fetch Logic
+// Profile, Password Change & Referral Fetch Logic
 // ==========================================
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
@@ -622,6 +638,41 @@ function closeProfile() {
     document.getElementById('profile-menu').style.display = 'none';
 }
 
+function openChangePasswordModal() {
+    closeProfile(); // Profile menu band karein
+    document.getElementById('change-password-modal').style.display = 'block';
+}
+
+function closeChangePasswordModal() {
+    document.getElementById('change-password-modal').style.display = 'none';
+}
+
+function submitChangePassword(event) {
+    event.preventDefault();
+    const oldPwd = document.getElementById('old-pwd').value;
+    const newPwd = document.getElementById('new-pwd').value;
+    const confirmPwd = document.getElementById('confirm-new-pwd').value;
+    const msgBox = document.getElementById('change-pwd-msg');
+
+    if (newPwd !== confirmPwd) {
+        msgBox.style.color = 'red';
+        msgBox.innerText = "New passwords do not match!";
+        return;
+    }
+
+    // Yahan backend API call aayegi password update karne ke liye (Future Update)
+    
+    msgBox.style.color = 'green';
+    msgBox.innerText = "Password updated successfully!";
+    
+    // Form clear karke thodi der me modal band kar dein
+    setTimeout(() => {
+        document.getElementById('changePasswordForm').reset();
+        msgBox.innerText = "";
+        closeChangePasswordModal();
+    }, 1500);
+}
+
 async function loadReferralData() {
     const token = localStorage.getItem('sarmaya_token');
     if (!token) return;
@@ -657,6 +708,13 @@ function openReferralScreen() {
     document.getElementById('payouts-screen').style.display = 'none';
     document.getElementById('join-group-screen').style.display = 'none';
     
+    document.getElementById('nav-home').classList.remove('active');
+    document.getElementById('nav-groups').classList.remove('active');
+    document.getElementById('nav-payouts').classList.remove('active');
+    
+    const navReferrals = document.getElementById('nav-referrals');
+    if (navReferrals) navReferrals.classList.add('active');
+
     document.getElementById('referral-screen').style.display = 'flex';
     
     loadReferralData(); 
@@ -665,6 +723,11 @@ function openReferralScreen() {
 function closeReferralScreen() {
     document.getElementById('referral-screen').style.display = 'none';
     document.getElementById('dashboard-screen').style.display = 'flex';
+    
+    const navReferrals = document.getElementById('nav-referrals');
+    if (navReferrals) navReferrals.classList.remove('active');
+    
+    document.getElementById('nav-home').classList.add('active');
 }
 
 function copyLink() {
@@ -708,7 +771,7 @@ function closeWithdrawalModal() {
 }
 
 async function submitWithdrawal(event) {
-    event.preventDefault(); // Page refresh hone se rokein
+    event.preventDefault(); 
     
     const messageBox = document.getElementById('withdraw-message');
     

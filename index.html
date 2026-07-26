@@ -31,6 +31,9 @@
                     <form id="loginForm" onsubmit="loginUser(event)">
                         <input type="tel" id="login-mobile" required pattern="[0-9]{10}" placeholder="10-Digit Mobile Number">
                         <input type="password" id="login-password" required placeholder="Enter Your Password">
+                        <div style="text-align: right; margin-bottom: 15px;">
+        <span style="color: #FFD700; font-size: 13px; cursor: pointer; text-decoration: underline;" onclick="toggleScreens('forgot')">Forgot Password?</span>
+    </div>
                         <button type="submit" class="primary-btn">Log In</button>
                     </form>
                     <p id="login-message" class="message-box"></p>
@@ -55,6 +58,32 @@
                         Already have an account? <span class="switch-link" onclick="toggleScreens('login')">Log In</span>
                     </div>
                 </div>
+                
+                <!-- ================= FORGOT PASSWORD SECTION ================= -->
+<div id="forgot-section" style="display: none;">
+    <h2 class="title" style="color: #FFD700; margin-bottom: 10px;">Reset Password</h2>
+    <p style="color: white; font-size: 13px; margin-bottom: 20px;">Enter registered mobile number to get OTP.</p>
+    <form id="forgotForm" onsubmit="sendForgotOTP(event)">
+        <input type="tel" id="forgot-mobile" required pattern="[0-9]{10}" placeholder="10-Digit Mobile Number">
+        <button type="submit" class="primary-btn" style="background-color: #dc3545; color: white;">Send OTP</button>
+    </form>
+    <div class="switch-text">
+        Remembered? <span class="switch-link" onclick="toggleScreens('login')">Log In</span>
+    </div>
+</div>
+
+<!-- ================= RESET PASSWORD SECTION ================= -->
+<div id="reset-section" style="display: none;">
+    <h2 class="title" style="color: #FFD700; margin-bottom: 10px;">Create New Password</h2>
+    <form id="resetForm" onsubmit="resetPassword(event)">
+        <input type="text" id="reset-otp" required pattern="[0-9]{6}" placeholder="6-Digit OTP" maxlength="6" style="text-align: center; letter-spacing: 3px; font-weight: bold;">
+        <input type="password" id="reset-new-pwd" required placeholder="Enter New Password">
+        <button type="submit" class="primary-btn" style="background-color: #28a745; color: white;">Set Password & Login</button>
+    </form>
+    <div class="switch-text">
+        <span class="switch-link" onclick="toggleScreens('login')">Back to Login</span>
+    </div>
+</div>
 
                 <!-- ================= OTP VERIFICATION SECTION ================= -->
                 <div id="otp-section" style="display: none;">
@@ -242,7 +271,8 @@
                 <!-- NAYA FIX: KYC & Change Password (Refer & Earn hataya gaya) -->
                 <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="alert('KYC System Coming Soon!')">🛡️ Complete KYC Verification</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System Coming Soon!')">🎧 Customer Support</button>
-                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Change Password feature active in next update!')">🔒 Change Password</button>
+               <!-- NAYA FIX: onclick me openChangePasswordModal() lagaya gaya hai -->
+<button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openChangePasswordModal()">🔒 Change Password</button>
                 
                 <button class="action-btn" style="background-color: #ffebee; color: #d32f2f; border: 1px solid #ef5350; margin-top: 10px;" onclick="logoutUser()">🚪 Logout</button>
                 <p style="text-align: center; font-size: 12px; color: #888; margin-top: 15px;">App Version 1.0.1 (Live)</p>
@@ -315,6 +345,29 @@
                 <button onclick="submitDeposit()" style="width: 100%; padding: 10px; background: #0A192F; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Submit Request</button>
             </div>
         </div>
+        
+        <!-- CHANGE PASSWORD MODAL (Inside App) -->
+<div id="change-password-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
+    <div style="width: 90%; max-width: 400px; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="color: #0A192F;">Change Password</h3>
+            <span onclick="closeChangePasswordModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
+        </div>
+        <form id="changePasswordForm" onsubmit="submitChangePassword(event)">
+            <label style="font-size: 13px; font-weight:bold; color: #333;">Current Password:</label>
+            <input type="password" id="old-pwd" required placeholder="Enter Old Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+            
+            <label style="font-size: 13px; font-weight:bold; color: #333;">New Password:</label>
+            <input type="password" id="new-pwd" required placeholder="Enter New Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+            
+            <label style="font-size: 13px; font-weight:bold; color: #333;">Confirm New Password:</label>
+            <input type="password" id="confirm-new-pwd" required placeholder="Confirm New Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px;">
+            
+            <button type="submit" class="primary-btn" style="background-color: #0A192F; color: white;">Update Password</button>
+            <p id="change-pwd-msg" style="text-align: center; font-size: 13px; margin-top: 10px; font-weight: bold;"></p>
+        </form>
+    </div>
+</div>
 
         <!-- Bottom Navigation Bar (NAYA FIX: Referral added) -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
