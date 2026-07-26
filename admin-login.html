@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Sarmaya Saathi</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0A192F; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center; width: 100%; max-width: 350px; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #218838; }
+        #error-msg { color: #dc3545; font-size: 14px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h2 style="color: #0A192F; margin-top:0;">🛡️ Admin Portal</h2>
+        <p style="color: #666; font-size: 14px;">Enter master password to continue</p>
+        
+        <input type="password" id="adminPass" placeholder="Master Password">
+        <button onclick="loginAdmin()">Secure Login</button>
+        <p id="error-msg"></p>
+    </div>
+
+    <script>
+        async function loginAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            const errorMsg = document.getElementById('error-msg');
+            
+            errorMsg.innerText = "Authenticating...";
+            errorMsg.style.color = "#007bff";
+
+            try {
+                const response = await fetch('https://sarmaya-saathi-api.onrender.com/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pass })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Token save karein aur admin.html par redirect karein
+                    localStorage.setItem('sarmaya_admin_token', data.token);
+                    window.location.href = 'admin.html';
+                } else {
+                    errorMsg.innerText = "❌ " + data.error;
+                    errorMsg.style.color = "#dc3545";
+                }
+            } catch (error) {
+                errorMsg.innerText = "⚠️ Server connection failed.";
+                errorMsg.style.color = "#dc3545";
+            }
+        }
+    </script>
+</body>
+</html>

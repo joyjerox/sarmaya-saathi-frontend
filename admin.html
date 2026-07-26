@@ -47,13 +47,13 @@
     const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; 
 
     // ==========================================
-    // 🔒 SECURITY LAYER: ADMIN PASSWORD PROMPT
+    // 🔒 ADVANCED SECURITY: Check Admin Token
     // ==========================================
-    const ADMIN_PASS = prompt("🔒 Enter Admin Password to access this page:");
+    const adminToken = localStorage.getItem('sarmaya_admin_token');
     
-    if (!ADMIN_PASS || ADMIN_PASS === "") {
-        document.body.innerHTML = "<h2 style='text-align:center; color:#dc3545; margin-top:50px;'>⛔ Access Denied! Unauthorised User.</h2>";
-        throw new Error("Access Denied");
+    // Agar token nahi hai, toh wapas login page par bhej do
+    if (!adminToken) {
+        window.location.href = 'admin-login.html';
     }
 
     // ==========================================
@@ -64,7 +64,7 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`, {
                 method: 'GET',
-                headers: { 'admin-secret': ADMIN_PASS } // Backend ko password bheja ja raha hai
+                headers: { 'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
             });
             const data = await response.json();
 
@@ -108,7 +108,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'admin-secret': ADMIN_PASS // Password here too
+                    'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
                 },
                 body: JSON.stringify({ withdrawal_id: id })
             });
@@ -126,7 +126,7 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/deposits`, {
                 method: 'GET',
-                headers: { 'admin-secret': ADMIN_PASS } // Secure Header
+                headers: { 'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
             });
             const data = await response.json();
 
@@ -170,7 +170,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'admin-secret': ADMIN_PASS // Secure Header
+                    'Authorization': `Bearer ${adminToken}` // Yahan Bearer token bhej rahe hain
                 },
                 body: JSON.stringify({ deposit_id: id })
             });
