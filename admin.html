@@ -53,6 +53,14 @@
 <script>
     const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; // Backend URL
 
+    // --- NEW SECURITY LAYER ---
+    const ADMIN_PASS = prompt("🔒 Enter Admin Password to access this page:");
+    
+    if (!ADMIN_PASS || ADMIN_PASS === "") {
+        document.body.innerHTML = "<h2 style='text-align:center; color:#dc3545; margin-top:50px;'>⛔ Access Denied! Unauthorised User.</h2>";
+        throw new Error("Access Denied");
+    }
+
     // ==========================================
     // 1. LOAD WITHDRAWALS
     // ==========================================
@@ -98,7 +106,10 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdraw/${action}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+        'Content-Type': 'application/json',
+        'admin-secret': ADMIN_PASS // Naya header add kiya
+    }
                 body: JSON.stringify({ withdrawal_id: id })
             });
             const data = await response.json();
@@ -152,7 +163,10 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/deposit/${action}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+        'Content-Type': 'application/json',
+        'admin-secret': ADMIN_PASS // Naya header add kiya
+    }
                 body: JSON.stringify({ deposit_id: id })
             });
             const data = await response.json();

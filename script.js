@@ -494,21 +494,24 @@ async function fetchTransactionHistory() {
 }
 
 // ==========================================
-// Dashboard Load 
+// Dashboard Load (SECURED)
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
+    const token = localStorage.getItem('sarmaya_token'); // Token zaroori hai
     let balance = localStorage.getItem('sarmaya_balance') || 0;
     
     document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(balance).toFixed(2)}`);
     
-    if (!userId) return;
+    if (!userId || !token) return;
 
     try {
         const response = await fetch(`${SERVER_URL}/api/dashboard`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: parseInt(userId) })
+            method: 'GET', // POST ki jagah ab humein secure GET use karna hai
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Token bhej rahe hain
+            }
         });
         const data = await response.json();
         
