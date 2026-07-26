@@ -422,11 +422,16 @@ async function fetchTransactionHistory() {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">Loading transactions...</p>';
 
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    // FIX: Changed from 'token' to 'sarmaya_token'
+    const token = localStorage.getItem('sarmaya_token');
+    if (!token) {
+        historyList.innerHTML = '<p style="text-align: center; color: red; font-size: 14px;">Authentication error.</p>';
+        return;
+    }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/transactions`, {
+        // FIX: Changed from API_BASE_URL to SERVER_URL
+        const response = await fetch(`${SERVER_URL}/api/transactions`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -498,10 +503,10 @@ async function loadDashboard() {
             
             // NAYA: Dashboard me referral earnings show karna
             const refEarningsDisplay = document.getElementById('dashboard-referral-earnings');
-if (refEarningsDisplay) {
-    // Is se amount hamesha decimal me sahi format hoga (e.g., $10.50)
-    refEarningsDisplay.innerText = `$${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
-}
+            if (refEarningsDisplay) {
+                // Is se amount hamesha decimal me sahi format hoga (e.g., $10.50)
+                refEarningsDisplay.innerText = `$${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
+            }
             
             fetchMyPools(); 
         }
@@ -704,15 +709,16 @@ async function submitWithdrawal(event) {
         const method = document.getElementById('withdraw-method').value;
         const details = document.getElementById('withdraw-details').value;
         
-        const token = localStorage.getItem('token');
+        // FIX: Changed from 'token' to 'sarmaya_token'
+        const token = localStorage.getItem('sarmaya_token');
         if (!token) {
             messageBox.style.color = '#dc3545';
             messageBox.innerText = 'Authentication error. Please login again.';
             return;
         }
 
-        // Backend API call
-        const response = await fetch(`${API_BASE_URL}/api/withdraw`, {
+        // FIX: Changed from API_BASE_URL to SERVER_URL
+        const response = await fetch(`${SERVER_URL}/api/withdraw`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
