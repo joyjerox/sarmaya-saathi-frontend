@@ -216,6 +216,86 @@
             </div>
             <p style="text-align: center; font-size: 12px; color: #666; padding: 20px;">*Platform fee of 2% applies to all payouts.</p>
         </div>
+        
+        <!-- Bidding Form UI -->
+<div class="bidding-section">
+    <h3>Place Your Bid</h3>
+    <input type="number" id="bidAmount" placeholder="Enter bid amount (e.g. 900)" required>
+    <button onclick="submitMyBid()">Submit Bid</button>
+    <p id="bidMessage" style="color: green; font-weight: bold;"></p>
+</div>
+
+<!-- Pool Status UI -->
+<div class="pool-status-section">
+    <h3>Pool Status</h3>
+    <p>Status: <span id="poolStatus">Loading...</span></p>
+    <p>Members: <span id="poolMembers">0</span> / <span id="maxMembers">0</span></p>
+    <p>Total Bids Placed: <span id="totalBids">0</span></p>
+</div>
+
+<script>
+    // Apne real pool aur user ID se inko replace karein
+    const CURRENT_POOL_ID = 1; 
+    const CURRENT_USER_ID = 101; 
+
+    // 1. Submit Bid Function
+    async function submitMyBid() {
+        const amount = document.getElementById('bidAmount').value;
+        const messageBox = document.getElementById('bidMessage');
+
+        if (!amount || amount <= 0) {
+            messageBox.style.color = "red";
+            messageBox.innerText = "Please enter a valid amount.";
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/bidding/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pool_id: CURRENT_POOL_ID,
+                    user_id: CURRENT_USER_ID,
+                    bid_amount: amount
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                messageBox.style.color = "green";
+                messageBox.innerText = data.message;
+                fetchPoolStatus(); // Update live status after bid
+            } else {
+                messageBox.style.color = "red";
+                messageBox.innerText = data.error;
+            }
+        } catch (error) {
+            messageBox.style.color = "red";
+            messageBox.innerText = "Server error. Try again later.";
+        }
+    }
+
+    // 2. Fetch Live Pool Status
+    async function fetchPoolStatus() {
+        try {
+            const response = await fetch(`/api/pool/status/${CURRENT_POOL_ID}`);
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('poolStatus').innerText = data.pool.status;
+                document.getElementById('poolMembers').innerText = data.pool.current_members;
+                document.getElementById('maxMembers').innerText = data.pool.max_members;
+                document.getElementById('totalBids').innerText = data.total_bids_placed;
+            }
+        } catch (error) {
+            console.error("Error fetching status:", error);
+        }
+    }
+
+    // Page load hote hi status check karein
+    window.onload = fetchPoolStatus;
+</script>
 
         <!-- ================= REFERRAL SYSTEM SCREEN ================= -->
         <div id="referral-screen" class="screen scrollable-screen" style="display: none; z-index: 30; background: #f4f7f6;">
