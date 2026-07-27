@@ -5,17 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sarmaya Saathi</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- FIX: Added FontAwesome properly for Social Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
         
+        <!-- 1. Splash Screen -->
         <div id="splash-screen" class="screen">
             <h1 class="logo">Sarmaya Saathi</h1>
             <p class="tagline">Community Saving App</p>
         </div>
 
+        <!-- 2. Auth Screen -->
         <div id="auth-screen" class="screen scrollable-screen auth-bg" style="display: none;">
             <div style="text-align: center; margin-bottom: 25px;">
                 <h1 class="logo" style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Sarmaya Saathi</h1>
@@ -23,6 +24,7 @@
             </div>
 
             <div class="auth-box">
+                <!-- LOG IN SECTION -->
                 <div id="login-section">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Welcome Back!</h2>
                     <form id="loginForm" onsubmit="loginUser(event)">
@@ -44,6 +46,7 @@
                     </div>
                 </div>
 
+                <!-- SIGN UP SECTION -->
                 <div id="signup-section" style="display: none;">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Join Us</h2>
                     <form id="signupForm" onsubmit="registerUser(event)">
@@ -60,6 +63,7 @@
                     </div>
                 </div>
 
+                <!-- OTP VERIFICATION SECTION -->
                 <div id="otp-section" style="display: none;">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Verify Email</h2>
                     <p style="color: white; font-size: 13px; margin-bottom: 15px;">OTP sent to your email</p>
@@ -72,9 +76,36 @@
                         <span class="switch-link" onclick="toggleScreens('login')">Back to Login</span>
                     </div>
                 </div>
+
+                <!-- FORGOT PASSWORD SECTION -->
+                <div id="forgot-section" style="display: none;">
+                    <h2 class="title" style="color: #FFD700; margin-bottom: 10px;">Reset Password</h2>
+                    <p style="color: white; font-size: 13px; margin-bottom: 20px;">Enter registered email to get OTP.</p>
+                    <form id="forgotForm" onsubmit="sendForgotOTP(event)">
+                        <input type="email" id="forgot-email" required placeholder="Registered Email Address">
+                        <button type="submit" class="primary-btn" style="background-color: #dc3545; color: white;">Send OTP</button>
+                    </form>
+                    <div class="switch-text">
+                        Remembered? <span class="switch-link" onclick="toggleScreens('login')">Log In</span>
+                    </div>
+                </div>
+
+                <!-- RESET PASSWORD SECTION -->
+                <div id="reset-section" style="display: none;">
+                    <h2 class="title" style="color: #FFD700; margin-bottom: 10px;">Create New Password</h2>
+                    <form id="resetForm" onsubmit="resetPassword(event)">
+                        <input type="text" id="reset-otp" required pattern="[0-9]{6}" placeholder="6-Digit OTP" maxlength="6" style="text-align: center; letter-spacing: 3px; font-weight: bold;">
+                        <input type="password" id="reset-new-pwd" required placeholder="Enter New Password">
+                        <button type="submit" class="primary-btn" style="background-color: #28a745; color: white;">Set Password & Login</button>
+                    </form>
+                    <div class="switch-text">
+                        <span class="switch-link" onclick="toggleScreens('login')">Back to Login</span>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- 3. Main Dashboard Screen -->
         <div id="dashboard-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Hi, <span id="user-name-display" style="color: white;">User</span></h3>
@@ -91,7 +122,7 @@
                 <div class="stat-box" onclick="document.getElementById('joined-pools-section').scrollIntoView({ behavior: 'smooth' });" style="cursor: pointer;">
                     <h4>My Groups</h4><p>0 Active</p>
                 </div>
-                <!-- FIX: Clicking this opens the Referral Screen -->
+                <!-- Yahan referral box me direct Refer Screen kholne ka logic lagaya gaya hai -->
                 <div class="stat-box" onclick="openReferralScreen()" style="cursor: pointer;">
                     <h4>Referrals</h4><p id="dashboard-referral-earnings">$0</p>
                 </div>
@@ -113,6 +144,7 @@
             </div>
         </div>
 
+        <!-- 4. Group List Screen -->
         <div id="groups-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Active Groups</h3>
@@ -132,6 +164,7 @@
             <button class="floating-btn" onclick="openJoinScreen()">+ Custom Pool</button>
         </div>
 
+        <!-- 5. Join Group Screen -->
         <div id="join-group-screen" class="screen overlay-screen" style="display: none;">
             <div class="header">
                 <h3 onclick="closeJoinScreen()" style="cursor: pointer;">⬅ Back</h3>
@@ -165,6 +198,7 @@
             </div>
         </div>
 
+        <!-- 6. Payout Screen (Bidding & Lottery UI Moved Here) -->
         <div id="payouts-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Action Center</h3>
@@ -174,12 +208,14 @@
             <div class="payout-card">
                 <h3>Current Pool Actions</h3>
                 
+                <!-- Pool Status UI -->
                 <div class="pool-status-section" style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
                     <p style="margin: 5px 0;"><strong>Status:</strong> <span id="poolStatus">Loading...</span></p>
                     <p style="margin: 5px 0;"><strong>Members:</strong> <span id="poolMembers">0</span> / <span id="maxMembers">0</span></p>
                     <p style="margin: 5px 0;"><strong>Total Bids:</strong> <span id="totalBids">0</span></p>
                 </div>
 
+                <!-- Bidding Form UI -->
                 <div class="bidding-section" style="text-align: left;">
                     <h4 style="margin-bottom: 10px; color: #0A192F;">Place Your Bid</h4>
                     <input type="number" id="bidAmount" placeholder="Enter bid amount (e.g. 900)" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px;">
@@ -190,7 +226,7 @@
             <p style="text-align: center; font-size: 12px; color: #666; padding: 20px;">*Platform fee of 2% applies to all payouts.</p>
         </div>
 
-        <!-- FIX: Updated Referral Screen with Social Share Logos -->
+        <!-- ================= REFERRAL SYSTEM SCREEN ================= -->
         <div id="referral-screen" class="screen scrollable-screen" style="display: none; z-index: 30; background: #f4f7f6;">
             <div class="header">
                 <h3 onclick="closeReferralScreen()" style="cursor: pointer;">⬅ Back</h3>
@@ -202,14 +238,14 @@
             </div>
             <div class="join-box" style="text-align: center; margin-top: 10px;">
                 <h4 style="color: #0A192F;">Invite Friends, Build Team</h4>
-                <p style="font-size: 14px; color: #666; margin: 10px 0;">Share your unique link. Earn 10% commission when they join a pool!</p>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <input type="text" id="invite-link" value="" readonly style="flex: 1; text-align: center; background: #e0e0e0; font-size: 12px; margin-bottom: 0;">
+                <p style="font-size: 14px; color: #666; margin: 10px 0;">Share your unique link. Earn commission when they join a pool!</p>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; text-align: center; background: #e0e0e0; font-size: 12px; margin-bottom: 0;">
                     <button class="primary-btn" onclick="copyLink()" style="width: auto; padding: 12px;">Copy</button>
                 </div>
-                
-                <h4 style="color: #0A192F; font-size: 14px; margin-top: 15px;">Share Via:</h4>
-                <div class="social-share-buttons" style="display: flex; justify-content: center; gap: 15px; margin-top: 10px;">
+                <!-- SOCIAL SHARE BUTTONS -->
+                <h4 style="margin-top: 20px; margin-bottom:10px; color:#333;">Share Via:</h4>
+                <div class="social-share-buttons" style="display: flex; justify-content: center; gap: 15px;">
                     <a href="#" id="share-whatsapp" target="_blank" class="share-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
                     <a href="#" id="share-facebook" target="_blank" class="share-btn facebook"><i class="fab fa-facebook"></i></a>
                     <a href="#" id="share-twitter" target="_blank" class="share-btn twitter"><i class="fa-brands fa-x-twitter"></i></a>
@@ -225,9 +261,11 @@
             </div>
         </div>
 
+        <!-- ================= ALL OVERLAYS / MODALS BELOW ================= -->
+
         <!-- PROFILE MENU OVERLAY -->
         <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 50;">
-            <div class="profile-modal-box" style="width: 90%; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; max-height: 85vh; overflow-y: auto;">
+            <div class="profile-modal-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="color: #0A192F;">My Profile</h3>
                     <span onclick="document.getElementById('profile-menu').style.display='none'" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
@@ -236,31 +274,36 @@
                 <div style="text-align: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 10px;">
                     <div class="profile-pic-container" style="text-align: center; position: relative; margin-bottom: 10px;">
                         <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="profileImage" onclick="document.getElementById('imageUpload').click();" style="width: 70px; height: 70px; border-radius: 50%; cursor: pointer; border: 2px solid #FFD700; background: white; object-fit: cover;">
+                        <p style="font-size: 11px; color: #666; margin-top: 5px;">Tap to change</p>
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="previewImage(event)">
                     </div>
 
                     <h4 id="profile-name" style="color: #0A192F; font-size: 18px; margin-bottom: 5px;">Loading...</h4>
                     <p id="profile-uid" style="background: #e3f2fd; color: #1565c0; display: inline-block; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; margin-bottom: 10px;">User ID: SS-XXXX</p>
                     
-                    <!-- FIX: Added Data Attributes for Mask/Unmask -->
                     <p style="color: #555; font-size: 14px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                        <span id="profile-mobile" data-full="" data-masked="">******</span>
-                        <i class="fa-solid fa-eye-slash" style="cursor: pointer; color: #888; font-size: 14px;" onclick="togglePrivacy('profile-mobile', this)"></i>
+                        <span id="profile-mobile" data-full="" data-masked="">+91 ******0000</span>
+                        <i class="fa-solid fa-eye-slash" style="cursor: pointer; color: #888; font-size: 12px;" onclick="togglePrivacy('profile-mobile', this)"></i>
                     </p>
                     <p style="color: #555; font-size: 14px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                        <span id="profile-email" data-full="" data-masked="">******</span>
-                        <i class="fa-solid fa-eye-slash" style="cursor: pointer; color: #888; font-size: 14px;" onclick="togglePrivacy('profile-email', this)"></i>
+                        <span id="profile-email" data-full="" data-masked="">e***@example.com</span>
+                        <i class="fa-solid fa-eye-slash" style="cursor: pointer; color: #888; font-size: 12px;" onclick="togglePrivacy('profile-email', this)"></i>
                     </p>
                 </div>
                 
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openHistoryModal()">💰 Transaction History</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openWithdrawalModal()">🏦 Withdraw Funds</button>
+                
+                <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="alert('KYC System Coming Soon!')">🛡️ Complete KYC Verification</button>
+                <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System Coming Soon!')">🎧 Customer Support</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openChangePasswordModal()">🔒 Change Password</button>
+                
                 <button class="action-btn" style="background-color: #ffebee; color: #d32f2f; border: 1px solid #ef5350; margin-top: 10px;" onclick="logoutUser()">🚪 Logout</button>
+                <p style="text-align: center; font-size: 12px; color: #888; margin-top: 15px;">App Version 1.0.1 (Live)</p>
             </div>
         </div>
         
-        <!-- FIX: CHANGE PASSWORD MODAL -->
+        <!-- CHANGE PASSWORD MODAL -->
         <div id="change-password-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; max-width: 400px; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
@@ -268,17 +311,24 @@
                     <span onclick="closeChangePasswordModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 <form id="changePasswordForm" onsubmit="submitChangePassword(event)">
-                    <input type="password" id="old-pwd" required placeholder="Old Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
-                    <input type="password" id="new-pwd" required placeholder="New Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                    <label style="font-size: 13px; font-weight:bold; color: #333;">Current Password:</label>
+                    <input type="password" id="old-pwd" required placeholder="Enter Old Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                    
+                    <label style="font-size: 13px; font-weight:bold; color: #333;">New Password:</label>
+                    <input type="password" id="new-pwd" required placeholder="Enter New Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                    
+                    <label style="font-size: 13px; font-weight:bold; color: #333;">Confirm New Password:</label>
                     <input type="password" id="confirm-new-pwd" required placeholder="Confirm New Password" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px;">
+                    
                     <button type="submit" class="primary-btn" style="background-color: #0A192F; color: white;">Update Password</button>
                     <p id="change-pwd-msg" style="text-align: center; font-size: 13px; margin-top: 10px; font-weight: bold;"></p>
                 </form>
             </div>
         </div>
         
+        <!-- TRANSACTION HISTORY OVERLAY -->
         <div id="history-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
-            <div style="width: 90%; max-height: 85vh; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; display: flex; flex-direction: column;">
+            <div style="width: 90%; max-height: 85vh; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="color: #0A192F;">Transaction History</h3>
                     <span onclick="closeHistoryModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
@@ -289,42 +339,61 @@
             </div>
         </div>
 
+        <!-- WITHDRAWAL MODAL -->
         <div id="withdrawal-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
-            <div style="width: 90%; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px;">
+            <div style="width: 90%; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="color: #0A192F;">Withdraw Funds</h3>
                     <span onclick="closeWithdrawalModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
-                    <input type="number" id="withdraw-amount" required min="1" step="0.01" placeholder="Amount to withdraw ($)" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
-                    <select id="withdraw-method" required style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
-                        <option value="">Select Method</option>
-                        <option value="UPI">UPI Transfer</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                    </select>
-                    <input type="text" id="withdraw-details" required placeholder="UPI ID or Bank A/c No." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
-                    <button type="submit" class="primary-btn" style="background-color: #007bff; color: white;">Submit Request</button>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 14px; color: #333; font-weight: bold;">Amount ($):</label>
+                        <input type="number" id="withdraw-amount" required min="1" step="0.01" placeholder="Enter amount to withdraw" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 14px; color: #333; font-weight: bold;">Payment Method:</label>
+                        <select id="withdraw-method" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                            <option value="">Select Method</option>
+                            <option value="UPI">UPI Transfer</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 14px; color: #333; font-weight: bold;">Payment Details:</label>
+                        <input type="text" id="withdraw-details" required placeholder="Enter UPI ID or Bank A/c No." style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                    </div>
+                    <button type="submit" class="primary-btn" style="background-color: #007bff; color: white; width: 100%;">Submit Request</button>
                     <p id="withdraw-message" style="text-align: center; font-size: 13px; margin-top: 15px; font-weight: bold;"></p>
                 </form>
             </div>
         </div>
 
+        <!-- ADD MONEY / DEPOSIT MODAL -->
         <div id="depositModal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
-            <div style="width: 90%; max-width: 400px; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px;">
+            <div style="width: 90%; max-width: 400px; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="color: #0A192F; margin:0;">📥 Add Money</h3>
                     <span onclick="closeDepositModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
+                
                 <div style="background: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px;">
-                    <p style="margin: 0 0 5px 0;"><strong>Step 1:</strong> Pay to UPI ID:</p>
+                    <p style="margin: 0 0 5px 0;"><strong>Step 1:</strong> Pay to this UPI ID:</p>
                     <p style="margin: 0; color: #28a745; font-weight: bold; font-size: 16px;">sarmayasaathi@upi</p>
                 </div>
-                <input type="number" id="depositAmount" placeholder="Amount Paid ($)" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <input type="text" id="depositUtr" placeholder="12-Digit UTR Number" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+
+                <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Step 2:</strong> Submit Payment Details:</p>
+                <label style="font-size: 13px; font-weight:bold;">Amount Paid ($):</label>
+                <input type="number" id="depositAmount" placeholder="Enter amount" style="width: 100%; padding: 8px; margin-top:5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                
+                <label style="font-size: 13px; font-weight:bold;">12-Digit UTR / Ref Number:</label>
+                <input type="text" id="depositUtr" placeholder="e.g. 312345678901" style="width: 100%; padding: 8px; margin-top:5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                
                 <button onclick="submitDeposit()" style="width: 100%; padding: 10px; background: #0A192F; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Submit Request</button>
             </div>
         </div>
 
+        <!-- Bottom Navigation Bar -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 Home</div>
             <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">👥 Groups</div>
