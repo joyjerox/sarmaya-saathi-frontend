@@ -49,37 +49,26 @@
 <script>
     const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; 
 
-    // ==========================================
-    // 🔒 ADVANCED SECURITY: Check Admin Token First
-    // ==========================================
     const adminToken = localStorage.getItem('sarmaya_admin_token');
     
-    // Agar token nahi mila, toh seedha login page par phek do
     if (!adminToken) {
         window.location.replace('admin-login.html');
     }
 
-    // Logout Function
     function logoutAdmin() {
         localStorage.removeItem('sarmaya_admin_token');
         window.location.replace('admin-login.html');
     }
 
-    // ==========================================
-    // 1. LOAD WITHDRAWALS
-    // ==========================================
     async function loadWithdrawals() {
         const container = document.getElementById('withdrawals-container');
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`, {
                 method: 'GET',
-                headers: { 
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
-                }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             });
             const data = await response.json();
 
-            // Agar token expire ho gaya ho ya galat ho
             if (response.status === 401) {
                 alert("Session expired! Please login again.");
                 logoutAdmin();
@@ -126,7 +115,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
+                    'Authorization': `Bearer ${adminToken}`
                 },
                 body: JSON.stringify({ withdrawal_id: id })
             });
@@ -136,17 +125,12 @@
         } catch (error) { alert("⚠️ Server connection failed!"); }
     }
 
-    // ==========================================
-    // 2. LOAD DEPOSITS
-    // ==========================================
     async function loadDeposits() {
         const container = document.getElementById('deposits-container');
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/deposits`, {
                 method: 'GET',
-                headers: { 
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
-                }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             });
             const data = await response.json();
 
@@ -190,7 +174,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
+                    'Authorization': `Bearer ${adminToken}`
                 },
                 body: JSON.stringify({ deposit_id: id })
             });
@@ -200,7 +184,6 @@
         } catch (error) { alert("⚠️ Server connection failed!"); }
     }
 
-    // Load both sections when page opens
     window.onload = () => {
         loadWithdrawals();
         loadDeposits();

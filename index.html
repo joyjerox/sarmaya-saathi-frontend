@@ -24,14 +24,13 @@
             </div>
 
             <div class="auth-box">
-                <!-- ================= LOG IN SECTION ================= -->
+                <!-- LOG IN SECTION -->
                 <div id="login-section">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Welcome Back!</h2>
                     <form id="loginForm" onsubmit="loginUser(event)">
                         <input type="tel" id="login-mobile" required pattern="[0-9]{10}" placeholder="10-Digit Mobile Number">
                         <input type="password" id="login-password" required placeholder="Enter Your Password">
                         
-                        <!-- NAYA FIX: Remember Me & Forgot Password ek line me -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <label style="color: white; font-size: 13px; display: flex; align-items: center; cursor: pointer;">
                                 <input type="checkbox" id="remember-me" style="width: auto; margin: 0 8px 0 0; cursor: pointer;"> Remember me
@@ -47,7 +46,7 @@
                     </div>
                 </div>
 
-                <!-- ================= SIGN UP SECTION ================= -->
+                <!-- SIGN UP SECTION -->
                 <div id="signup-section" style="display: none;">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Join Us</h2>
                     <form id="signupForm" onsubmit="registerUser(event)">
@@ -64,7 +63,7 @@
                     </div>
                 </div>
 
-                <!-- ================= OTP VERIFICATION SECTION ================= -->
+                <!-- OTP VERIFICATION SECTION -->
                 <div id="otp-section" style="display: none;">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 20px;">Verify Email</h2>
                     <p style="color: white; font-size: 13px; margin-bottom: 15px;">OTP sent to your email</p>
@@ -78,13 +77,11 @@
                     </div>
                 </div>
 
-                <!-- ================= FORGOT PASSWORD SECTION ================= -->
+                <!-- FORGOT PASSWORD SECTION -->
                 <div id="forgot-section" style="display: none;">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 10px;">Reset Password</h2>
-                    <!-- NAYA FIX: Email Description -->
                     <p style="color: white; font-size: 13px; margin-bottom: 20px;">Enter registered email to get OTP.</p>
                     <form id="forgotForm" onsubmit="sendForgotOTP(event)">
-                        <!-- NAYA FIX: Email Input Field -->
                         <input type="email" id="forgot-email" required placeholder="Registered Email Address">
                         <button type="submit" class="primary-btn" style="background-color: #dc3545; color: white;">Send OTP</button>
                     </form>
@@ -93,7 +90,7 @@
                     </div>
                 </div>
 
-                <!-- ================= RESET PASSWORD SECTION ================= -->
+                <!-- RESET PASSWORD SECTION -->
                 <div id="reset-section" style="display: none;">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 10px;">Create New Password</h2>
                     <form id="resetForm" onsubmit="resetPassword(event)">
@@ -200,102 +197,33 @@
             </div>
         </div>
 
-        <!-- 6. Payout Screen -->
+        <!-- 6. Payout Screen (Bidding & Lottery UI Moved Here) -->
         <div id="payouts-screen" class="screen scrollable-screen" style="display: none;">
             <div class="header">
                 <h3>Action Center</h3>
                 <div class="profile-icon" onclick="document.getElementById('profile-menu').style.display='block'" style="cursor: pointer;">👤</div>
             </div>
+            
             <div class="payout-card">
-                <h3>Current Pool: $0</h3>
-                <p class="timer">⏳ Join a pool to see actions</p>
-                <div class="payout-actions">
-                    <button class="action-btn bid-btn" onclick="alert('Bidding prompt opened. Enter discount %.')">🟢 Bidding Karein</button>
-                    <button class="action-btn lot-btn" onclick="alert('Opted into Auto-draw (Lottery).')">🟡 Lottery Me Jaayein</button>
+                <h3>Current Pool Actions</h3>
+                
+                <!-- Pool Status UI -->
+                <div class="pool-status-section" style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
+                    <p style="margin: 5px 0;"><strong>Status:</strong> <span id="poolStatus">Loading...</span></p>
+                    <p style="margin: 5px 0;"><strong>Members:</strong> <span id="poolMembers">0</span> / <span id="maxMembers">0</span></p>
+                    <p style="margin: 5px 0;"><strong>Total Bids:</strong> <span id="totalBids">0</span></p>
+                </div>
+
+                <!-- Bidding Form UI -->
+                <div class="bidding-section" style="text-align: left;">
+                    <h4 style="margin-bottom: 10px; color: #0A192F;">Place Your Bid</h4>
+                    <input type="number" id="bidAmount" placeholder="Enter bid amount (e.g. 900)" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px;">
+                    <button onclick="submitMyBid()" class="primary-btn" style="background: #2e7d32; color: white;">Submit Bid</button>
+                    <p id="bidMessage" style="color: green; font-weight: bold; margin-top: 10px; text-align: center;"></p>
                 </div>
             </div>
             <p style="text-align: center; font-size: 12px; color: #666; padding: 20px;">*Platform fee of 2% applies to all payouts.</p>
         </div>
-        
-        <!-- Bidding Form UI -->
-<div class="bidding-section">
-    <h3>Place Your Bid</h3>
-    <input type="number" id="bidAmount" placeholder="Enter bid amount (e.g. 900)" required>
-    <button onclick="submitMyBid()">Submit Bid</button>
-    <p id="bidMessage" style="color: green; font-weight: bold;"></p>
-</div>
-
-<!-- Pool Status UI -->
-<div class="pool-status-section">
-    <h3>Pool Status</h3>
-    <p>Status: <span id="poolStatus">Loading...</span></p>
-    <p>Members: <span id="poolMembers">0</span> / <span id="maxMembers">0</span></p>
-    <p>Total Bids Placed: <span id="totalBids">0</span></p>
-</div>
-
-<script>
-    // Apne real pool aur user ID se inko replace karein
-    const CURRENT_POOL_ID = 1; 
-    const CURRENT_USER_ID = 101; 
-
-    // 1. Submit Bid Function
-    async function submitMyBid() {
-        const amount = document.getElementById('bidAmount').value;
-        const messageBox = document.getElementById('bidMessage');
-
-        if (!amount || amount <= 0) {
-            messageBox.style.color = "red";
-            messageBox.innerText = "Please enter a valid amount.";
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/bidding/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pool_id: CURRENT_POOL_ID,
-                    user_id: CURRENT_USER_ID,
-                    bid_amount: amount
-                })
-            });
-
-            const data = await response.json();
-            
-            if (data.success) {
-                messageBox.style.color = "green";
-                messageBox.innerText = data.message;
-                fetchPoolStatus(); // Update live status after bid
-            } else {
-                messageBox.style.color = "red";
-                messageBox.innerText = data.error;
-            }
-        } catch (error) {
-            messageBox.style.color = "red";
-            messageBox.innerText = "Server error. Try again later.";
-        }
-    }
-
-    // 2. Fetch Live Pool Status
-    async function fetchPoolStatus() {
-        try {
-            const response = await fetch(`/api/pool/status/${CURRENT_POOL_ID}`);
-            const data = await response.json();
-
-            if (data.success) {
-                document.getElementById('poolStatus').innerText = data.pool.status;
-                document.getElementById('poolMembers').innerText = data.pool.current_members;
-                document.getElementById('maxMembers').innerText = data.pool.max_members;
-                document.getElementById('totalBids').innerText = data.total_bids_placed;
-            }
-        } catch (error) {
-            console.error("Error fetching status:", error);
-        }
-    }
-
-    // Page load hote hi status check karein
-    window.onload = fetchPoolStatus;
-</script>
 
         <!-- ================= REFERRAL SYSTEM SCREEN ================= -->
         <div id="referral-screen" class="screen scrollable-screen" style="display: none; z-index: 30; background: #f4f7f6;">
@@ -344,7 +272,6 @@
                     <h4 id="profile-name" style="color: #0A192F; font-size: 18px; margin-bottom: 5px;">Loading...</h4>
                     <p id="profile-uid" style="background: #e3f2fd; color: #1565c0; display: inline-block; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; margin-bottom: 10px;">User ID: SS-XXXX</p>
                     
-                    <!-- NAYA FIX: Mobile and Email Hide/Show functionality -->
                     <p style="color: #555; font-size: 14px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px;">
                         <span id="profile-mobile" data-full="" data-masked="">+91 ******0000</span>
                         <i class="fa-solid fa-eye-slash" style="cursor: pointer; color: #888; font-size: 12px;" onclick="togglePrivacy('profile-mobile', this)"></i>

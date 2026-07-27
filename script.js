@@ -4,15 +4,17 @@
 const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
 
 // ==========================================
-// 2. Splash Screen & OnLoad Logic
+// 2. Splash Screen Timer
 // ==========================================
 setTimeout(() => {
     document.getElementById('splash-screen').style.display = 'none';
     document.getElementById('auth-screen').style.display = 'flex';
 }, 3000); 
 
+// ==========================================
+// 3. URL Referral Capture (Auto-fill)
+// ==========================================
 window.addEventListener('DOMContentLoaded', () => {
-    // Check URL Referral
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     
@@ -23,55 +25,27 @@ window.addEventListener('DOMContentLoaded', () => {
             if(refInput) refInput.value = refCode;
         }, 3100); 
     }
-
-    // NAYA FIX: Remember Me Logic on Load
-    const savedMobile = localStorage.getItem('sarmaya_remember_mobile');
-    const savedPassword = localStorage.getItem('sarmaya_remember_password');
-    
-    if (savedMobile && savedPassword) {
-        const mobileInput = document.getElementById('login-mobile');
-        const passwordInput = document.getElementById('login-password');
-        const rememberCheckbox = document.getElementById('remember-me');
-        
-        if (mobileInput) mobileInput.value = savedMobile;
-        if (passwordInput) passwordInput.value = savedPassword;
-        if (rememberCheckbox) rememberCheckbox.checked = true;
-    }
 });
 
 // ==========================================
-// Screen Switcher 
+// Screen Switcher
 // ==========================================
 function toggleScreens(screenName) {
-    const screens = ['signup', 'login', 'otp', 'forgot', 'reset'];
-    screens.forEach(screen => {
-        const el = document.getElementById(`${screen}-section`);
-        if (el) el.style.display = 'none';
-    });
-    const activeScreen = document.getElementById(`${screenName}-section`);
-    if (activeScreen) activeScreen.style.display = 'block';
-}
+    const signupScreen = document.getElementById('signup-section');
+    const loginScreen = document.getElementById('login-section');
+    const otpScreen = document.getElementById('otp-section');
 
-// ==========================================
-// FORGOT & RESET PASSWORD LOGIC (Now using Email)
-// ==========================================
-function sendForgotOTP(event) {
-    event.preventDefault();
-    // NAYA FIX: Getting Email instead of Mobile
-    const email = document.getElementById('forgot-email').value;
-    
-    // Future API call will happen here
-    alert(`OTP sent securely to ${email}`);
-    toggleScreens('reset'); 
-}
+    signupScreen.style.display = 'none';
+    loginScreen.style.display = 'none';
+    otpScreen.style.display = 'none';
 
-function resetPassword(event) {
-    event.preventDefault();
-    const otp = document.getElementById('reset-otp').value;
-    const newPwd = document.getElementById('reset-new-pwd').value;
-    
-    alert('Password reset successful! Please login with your new password.');
-    toggleScreens('login');
+    if (screenName === 'login') {
+        loginScreen.style.display = 'block';
+    } else if (screenName === 'signup') {
+        signupScreen.style.display = 'block';
+    } else if (screenName === 'otp') {
+        otpScreen.style.display = 'block';
+    }
 }
 
 // ==========================================
@@ -79,11 +53,11 @@ function resetPassword(event) {
 // ==========================================
 async function registerUser(event) {
     event.preventDefault(); 
+
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const mobile = document.getElementById('reg-mobile').value;
     const password = document.getElementById('reg-password').value;
-    
     const refInput = document.getElementById('reg-referral');
     const referral_code = refInput ? refInput.value.trim() : ''; 
     const messageBox = document.getElementById('signup-message');
@@ -97,6 +71,7 @@ async function registerUser(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, mobile_number: mobile, email, password, referral_code })
         });
+
         const data = await response.json();
 
         if (response.ok) {
@@ -109,6 +84,7 @@ async function registerUser(event) {
             messageBox.innerText = `⚠️ Error: ${data.error}`; 
         }
     } catch (error) {
+        console.error("Signup request fail:", error);
         messageBox.style.color = "#dc3545";
         messageBox.innerText = "⚠️ Server connection failed.";
     }
@@ -119,6 +95,7 @@ async function registerUser(event) {
 // ==========================================
 async function verifyOTPUser(event) {
     event.preventDefault();
+
     const email = localStorage.getItem('temp_email');
     const otp = document.getElementById('otp-input').value;
     const messageBox = document.getElementById('otp-message');
@@ -138,6 +115,7 @@ async function verifyOTPUser(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp })
         });
+
         const data = await response.json();
 
         if (response.ok) {
@@ -151,6 +129,7 @@ async function verifyOTPUser(event) {
             messageBox.innerText = `⚠️ Error: ${data.error}`; 
         }
     } catch (error) {
+        console.error("OTP error:", error);
         messageBox.style.color = "#dc3545";
         messageBox.innerText = "⚠️ Server connection failed.";
     }
@@ -161,9 +140,9 @@ async function verifyOTPUser(event) {
 // ==========================================
 async function loginUser(event) {
     event.preventDefault(); 
+
     const mobile = document.getElementById('login-mobile').value;
     const password = document.getElementById('login-password').value;
-    const rememberMe = document.getElementById('remember-me').checked; // Checkbox Check
     const messageBox = document.getElementById('login-message');
     
     messageBox.style.color = "#FFD700";
@@ -172,9 +151,12 @@ async function loginUser(event) {
     try {
         const response = await fetch(`${SERVER_URL}/api/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ mobile_number: mobile, password: password })
         });
+
         const data = await response.json();
 
         if (response.ok) {
@@ -184,16 +166,10 @@ async function loginUser(event) {
             localStorage.setItem('sarmaya_mobile', data.user.mobile_number);
             localStorage.setItem('sarmaya_balance', data.user.wallet_balance);
 
-            // NAYA FIX: Save to local storage if Remember Me is checked
-            if (rememberMe) {
-                localStorage.setItem('sarmaya_remember_mobile', mobile);
-                localStorage.setItem('sarmaya_remember_password', password);
-            } else {
-                localStorage.removeItem('sarmaya_remember_mobile');
-                localStorage.removeItem('sarmaya_remember_password');
-            }
-
             messageBox.innerText = "";
+            document.getElementById('login-mobile').value = '';
+            document.getElementById('login-password').value = '';
+
             document.getElementById('auth-screen').style.display = 'none'; 
             document.getElementById('dashboard-screen').style.display = 'flex'; 
             document.getElementById('bottom-nav').style.display = 'flex'; 
@@ -204,12 +180,13 @@ async function loginUser(event) {
             const walletBalance = document.getElementById('wallet-balance');
             if(walletBalance) walletBalance.innerText = `$${data.user.wallet_balance}`;
             
-            loadDashboard();
+            loadDashboard(); 
         } else {
             messageBox.style.color = "#dc3545";
             messageBox.innerText = `⚠️ Error: ${data.error}`;
         }
     } catch (error) {
+        console.error("Error during login:", error);
         messageBox.style.color = "#dc3545";
         messageBox.innerText = "⚠️ Server connection failed.";
     }
@@ -228,8 +205,6 @@ function switchTab(tabName) {
     document.getElementById('nav-home').classList.remove('active');
     document.getElementById('nav-groups').classList.remove('active');
     document.getElementById('nav-payouts').classList.remove('active');
-    const navReferrals = document.getElementById('nav-referrals');
-    if (navReferrals) navReferrals.classList.remove('active');
 
     if(tabName === 'home') {
         document.getElementById('dashboard-screen').style.display = 'flex';
@@ -242,6 +217,7 @@ function switchTab(tabName) {
     } else if(tabName === 'payouts') {
         document.getElementById('payouts-screen').style.display = 'flex';
         document.getElementById('nav-payouts').classList.add('active');
+        fetchPoolStatus(); // Load pool status when tab is opened
     }
 }
 
@@ -258,6 +234,7 @@ function closeJoinScreen() {
 function syncInputs(type, source) {
     let slider = document.getElementById(type + '-slider');
     let box = document.getElementById(type + '-box');
+    
     if(source === 'slider') {
         box.value = slider.value;
     } else {
@@ -278,13 +255,15 @@ function checkLimits(type) {
 }
 
 // ==========================================
-// Groups Logic
+// Groups Fetching & Filtering Logic
 // ==========================================
 let globalGroupsList = []; 
+
 async function fetchGroups() {
     try {
         const response = await fetch(`${SERVER_URL}/api/groups`);
         const data = await response.json();
+
         if (data.success) {
             globalGroupsList = data.groups; 
             const activeTab = document.querySelector('.filter-tabs .tab.active');
@@ -292,6 +271,7 @@ async function fetchGroups() {
             filterGroups(defaultFilter, activeTab);
         }
     } catch (error) {
+        console.error("Groups fetch error:", error);
         document.querySelector('.group-list').innerHTML = '<p style="text-align: center; color: red;">Failed to load pools from server.</p>';
     }
 }
@@ -301,9 +281,16 @@ function filterGroups(cycleName, tabElement) {
         document.querySelectorAll('.filter-tabs .tab').forEach(tab => tab.classList.remove('active'));
         tabElement.classList.add('active');
     }
+
     const groupListContainer = document.querySelector('.group-list');
     groupListContainer.innerHTML = ''; 
-    let filteredGroups = cycleName === 'All' ? globalGroupsList : globalGroupsList.filter(group => group.cycle === cycleName);
+
+    let filteredGroups = [];
+    if (cycleName === 'All') {
+        filteredGroups = globalGroupsList; 
+    } else {
+        filteredGroups = globalGroupsList.filter(group => group.cycle === cycleName);
+    }
 
     if (filteredGroups.length === 0) {
         groupListContainer.innerHTML = `<p style="text-align: center; padding: 20px; color: #666;">No active ${cycleName} pools found.</p>`;
@@ -332,17 +319,23 @@ async function joinPool(poolId) {
     try {
         const response = await fetch(`${SERVER_URL}/api/join-pool`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
             body: JSON.stringify({ user_id: parseInt(userId), pool_id: parseInt(poolId) })
         });
         const data = await response.json();
+
         if (data.success) {
             alert("🎉 " + data.message);
             loadDashboard();
         } else {
             alert("⚠️ " + data.error);
         }
-    } catch (error) { alert("Backend connection failed!"); }
+    } catch (error) {
+        alert("Backend connection failed!");
+    }
 }
 
 async function createCustomPool() {
@@ -360,56 +353,157 @@ async function createCustomPool() {
             alert("🎉 " + data.message);
             closeJoinScreen(); 
             fetchGroups(); 
-        } else { alert("⚠️ " + data.error); }
-    } catch (error) { alert("Backend connection failed!"); }
+        } else {
+            alert("⚠️ " + data.error);
+        }
+    } catch (error) {
+        alert("Backend connection failed!");
+    }
 }
 
 // ==========================================
 // Wallet Deposit Logic
 // ==========================================
-function openDepositModal() { document.getElementById('depositModal').style.display = 'block'; }
+function openDepositModal() {
+    document.getElementById('depositModal').style.display = 'block';
+}
+
 function closeDepositModal() {
     document.getElementById('depositModal').style.display = 'none';
     document.getElementById('depositAmount').value = '';
     document.getElementById('depositUtr').value = '';
 }
+
 async function submitDeposit() {
     const amount = document.getElementById('depositAmount').value;
     const utr = document.getElementById('depositUtr').value;
     const token = localStorage.getItem('sarmaya_token'); 
 
-    if (!amount || amount <= 0 || !utr) { alert("⚠️ Please enter a valid amount and UTR number."); return; }
-    if (!token) { alert("⚠️ You must be logged in to add money."); return; }
+    if (!amount || amount <= 0 || !utr) {
+        alert("⚠️ Please enter a valid amount and UTR number.");
+        return;
+    }
+
+    if (!token) {
+        alert("⚠️ You must be logged in to add money.");
+        return;
+    }
 
     try {
         const response = await fetch(`${SERVER_URL}/api/deposit`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ amount: parseFloat(amount), utr_number: utr, payment_method: 'UPI' })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({
+                amount: parseFloat(amount),
+                utr_number: utr,
+                payment_method: 'UPI'
+            })
         });
+
         const data = await response.json();
+
         if (data.success) {
             alert("✅ " + data.message);
             closeDepositModal();
-        } else { alert("⚠️ Error: " + data.error); }
-    } catch (error) { alert("⚠️ Server error. Please try again later."); }
+        } else {
+            alert("⚠️ Error: " + data.error);
+        }
+    } catch (error) {
+        console.error("Deposit error:", error);
+        alert("⚠️ Server error. Please try again later.");
+    }
 }
 
 // ==========================================
-// Dashboard Load 
+// Transaction History
+// ==========================================
+function openHistoryModal() {
+    closeProfile();
+    document.getElementById('history-modal').style.display = 'block';
+    fetchTransactionHistory(); 
+}
+
+function closeHistoryModal() {
+    document.getElementById('history-modal').style.display = 'none';
+}
+
+async function fetchTransactionHistory() {
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">Loading transactions...</p>';
+
+    const token = localStorage.getItem('sarmaya_token');
+    if (!token) {
+        historyList.innerHTML = '<p style="text-align: center; color: red; font-size: 14px;">Authentication error.</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/transactions`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (data.transactions.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px; margin-top: 20px;">No transactions found.</p>';
+                return;
+            }
+
+            let html = '';
+            data.transactions.forEach(tx => {
+                const date = new Date(tx.created_at).toLocaleDateString('en-GB'); 
+                
+                const isPositive = (tx.transaction_type === 'Deposit' || tx.transaction_type === 'Commission' || tx.transaction_type === 'Refund');
+                const color = isPositive ? '#28a745' : '#dc3545';
+                const sign = isPositive ? '+' : '-';
+                
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong style="color: #333; font-size: 14px;">${tx.transaction_type}</strong>
+                            <p style="color: #777; font-size: 12px; margin: 3px 0 0 0;">${date} • ${tx.description || ''}</p>
+                        </div>
+                        <div style="color: ${color}; font-weight: bold; font-size: 15px;">
+                            ${sign}$${parseFloat(tx.amount).toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+            historyList.innerHTML = html;
+        } else {
+            historyList.innerHTML = '<p style="text-align: center; color: red; font-size: 14px;">Failed to load history.</p>';
+        }
+    } catch (error) {
+        console.error("Error fetching history:", error);
+        historyList.innerHTML = '<p style="text-align: center; color: red; font-size: 14px;">Server connection error.</p>';
+    }
+}
+
+// ==========================================
+// Dashboard Logic
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
-    const token = localStorage.getItem('sarmaya_token');
+    const token = localStorage.getItem('sarmaya_token'); 
     let balance = localStorage.getItem('sarmaya_balance') || 0;
     
     document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(balance).toFixed(2)}`);
+    
     if (!userId || !token) return;
 
     try {
         const response = await fetch(`${SERVER_URL}/api/dashboard`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            method: 'GET', 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
         });
         const data = await response.json();
         
@@ -419,29 +513,41 @@ async function loadDashboard() {
             document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(data.wallet_balance).toFixed(2)}`);
             
             const refEarningsDisplay = document.getElementById('dashboard-referral-earnings');
-            if (refEarningsDisplay) refEarningsDisplay.innerText = `$${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
+            if (refEarningsDisplay) {
+                refEarningsDisplay.innerText = `$${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
+            }
+            
             fetchMyPools(); 
         }
-    } catch (error) { console.error("Dashboard error:", error); }
+    } catch (error) {
+        console.error("Dashboard error:", error);
+    }
 }
 
 async function fetchMyPools() {
     const token = localStorage.getItem('sarmaya_token');
     if (!token) return;
+
     try {
         const response = await fetch(`${SERVER_URL}/api/my-pools`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }
         });
         const data = await response.json();
 
         if (data.success) {
             const listContainer = document.getElementById('my-pools-list');
+            
             if (data.my_pools.length === 0) {
                 listContainer.innerHTML = '<p style="text-align: center; font-size: 14px; color: #666; padding: 10px;">You haven\'t joined any pools yet.</p>';
                 return;
             }
+
             listContainer.innerHTML = ''; 
+            
             data.my_pools.forEach(pool => {
                 listContainer.innerHTML += `
                     <div class="activity-item" style="border-left: 4px solid #FFD700; background: #fff; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
@@ -456,11 +562,14 @@ async function fetchMyPools() {
                 `;
             });
         }
-    } catch (error) { document.getElementById('my-pools-list').innerHTML = '<p style="color: red; text-align: center;">Failed to load your pools.</p>'; }
+    } catch (error) {
+        console.error("Error fetching my pools:", error);
+        document.getElementById('my-pools-list').innerHTML = '<p style="color: red; text-align: center;">Failed to load your pools.</p>';
+    }
 }
 
 // ==========================================
-// Profile, Privacy Toggle & Passwords
+// Profile & Referral Fetch
 // ==========================================
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
@@ -470,7 +579,10 @@ async function openProfile() {
         try {
             const response = await fetch(`${SERVER_URL}/api/profile`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                }
             });
             const data = await response.json();
             if(data.success) {
@@ -479,138 +591,81 @@ async function openProfile() {
                 const profileName = document.getElementById('profile-name');
                 if (profileName) profileName.innerText = userData.name;
                 
+                const profileEmail = document.getElementById('profile-email');
+                if (profileEmail) profileEmail.innerText = userData.email;
+                
+                const profileMobile = document.getElementById('profile-mobile');
+                if (profileMobile) profileMobile.innerText = "+91 " + userData.mobile_number;
+                
                 const uniqueId = "SS-" + (1000 + parseInt(userData.id)); 
                 const profileUid = document.getElementById('profile-uid');
                 if (profileUid) profileUid.innerText = "User ID: " + uniqueId;
-
-                // NAYA FIX: Data masking logic for Email & Mobile
-                const rawMobile = String(userData.mobile_number);
-                const mobileFull = "+91 " + rawMobile;
-                const mobileMasked = "+91 ******" + rawMobile.slice(-4); // last 4 digits
-                
-                const emailParts = userData.email.split("@");
-                const emailMasked = emailParts[0].charAt(0) + "***@" + emailParts[1];
-                const emailFull = userData.email;
-
-                const profileMobile = document.getElementById('profile-mobile');
-                if (profileMobile) {
-                    profileMobile.setAttribute('data-full', mobileFull);
-                    profileMobile.setAttribute('data-masked', mobileMasked);
-                    profileMobile.innerText = mobileMasked; 
-                    profileMobile.nextElementSibling.className = 'fa-solid fa-eye-slash'; // reset icon
-                }
-
-                const profileEmail = document.getElementById('profile-email');
-                if (profileEmail) {
-                    profileEmail.setAttribute('data-full', emailFull);
-                    profileEmail.setAttribute('data-masked', emailMasked);
-                    profileEmail.innerText = emailMasked; 
-                    profileEmail.nextElementSibling.className = 'fa-solid fa-eye-slash'; // reset icon
-                }
             }
-        } catch(error) { console.error("Failed to fetch secure profile data"); }
+        } catch(error) {
+            console.error("Failed to fetch secure profile data");
+        }
     }
 }
 
-// NAYA FIX: Eye Icon Privacy Toggle
-function togglePrivacy(elementId, iconElement) {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-    
-    const fullText = el.getAttribute('data-full');
-    const maskedText = el.getAttribute('data-masked');
-    
-    if (el.innerText === maskedText) {
-        el.innerText = fullText;
-        iconElement.className = 'fa-solid fa-eye';
-        iconElement.style.color = '#0A192F'; // Dark color when visible
-    } else {
-        el.innerText = maskedText;
-        iconElement.className = 'fa-solid fa-eye-slash';
-        iconElement.style.color = '#888'; // Light color when hidden
-    }
+function closeProfile() {
+    document.getElementById('profile-menu').style.display = 'none';
 }
 
-function closeProfile() { document.getElementById('profile-menu').style.display = 'none'; }
-function openChangePasswordModal() { closeProfile(); document.getElementById('change-password-modal').style.display = 'block'; }
-function closeChangePasswordModal() { document.getElementById('change-password-modal').style.display = 'none'; }
-
-function submitChangePassword(event) {
-    event.preventDefault();
-    const newPwd = document.getElementById('new-pwd').value;
-    const confirmPwd = document.getElementById('confirm-new-pwd').value;
-    const msgBox = document.getElementById('change-pwd-msg');
-
-    if (newPwd !== confirmPwd) {
-        msgBox.style.color = 'red';
-        msgBox.innerText = "New passwords do not match!";
-        return;
-    }
-    
-    msgBox.style.color = 'green';
-    msgBox.innerText = "Password updated successfully!";
-    setTimeout(() => {
-        document.getElementById('changePasswordForm').reset();
-        msgBox.innerText = "";
-        closeChangePasswordModal();
-    }, 1500);
-}
-
-// ==========================================
-// Referral System & Others
-// ==========================================
 async function loadReferralData() {
     const token = localStorage.getItem('sarmaya_token');
     if (!token) return;
+
     try {
         const response = await fetch(`${SERVER_URL}/api/referrals`, {
-            method: 'GET', headers: { 'Authorization': `Bearer ${token}` }
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
+
         if (data.success) {
             const walletAmountEl = document.querySelector('#referral-screen .wallet-amount');
             if(walletAmountEl) walletAmountEl.innerText = `$${data.commission_earned}`;
+            
             const activityAmountEl = document.querySelector('#referral-screen .activity-amount');
             if(activityAmountEl) activityAmountEl.innerText = `${data.team_size} Members`;
+            
             const inviteLink = `${window.location.origin}?ref=${data.referral_code}`;
             const linkInput = document.getElementById('invite-link');
             if(linkInput) linkInput.value = inviteLink;
         }
-    } catch (error) { console.error("Referral fetch error:", error); }
+    } catch (error) {
+        console.error("Referral fetch error:", error);
+    }
 }
 
 function openReferralScreen() {
     closeProfile();
+    
     document.getElementById('dashboard-screen').style.display = 'none';
     document.getElementById('groups-screen').style.display = 'none';
     document.getElementById('payouts-screen').style.display = 'none';
     document.getElementById('join-group-screen').style.display = 'none';
     
-    document.getElementById('nav-home').classList.remove('active');
-    document.getElementById('nav-groups').classList.remove('active');
-    document.getElementById('nav-payouts').classList.remove('active');
-    const navReferrals = document.getElementById('nav-referrals');
-    if (navReferrals) navReferrals.classList.add('active');
-
     document.getElementById('referral-screen').style.display = 'flex';
+    
     loadReferralData(); 
 }
 
 function closeReferralScreen() {
     document.getElementById('referral-screen').style.display = 'none';
     document.getElementById('dashboard-screen').style.display = 'flex';
-    const navReferrals = document.getElementById('nav-referrals');
-    if (navReferrals) navReferrals.classList.remove('active');
-    document.getElementById('nav-home').classList.add('active');
 }
 
 function copyLink() {
     const linkInput = document.getElementById('invite-link');
-    if(linkInput) { linkInput.select(); document.execCommand('copy'); alert("Invitation Link Copied!"); }
+    if(linkInput) {
+        linkInput.select();
+        document.execCommand('copy');
+        alert("Invitation Link Copied!");
+    }
 }
 
 function logoutUser() {
-    // Only removing session tokens, NOT the remember me credentials
     localStorage.removeItem('sarmaya_token'); 
     localStorage.removeItem('sarmaya_user_id');
     localStorage.removeItem('sarmaya_name');
@@ -622,66 +677,29 @@ function logoutUser() {
     window.location.reload(); 
 }
 
-document.querySelectorAll('.profile-icon').forEach(icon => { icon.addEventListener('click', openProfile); });
+document.querySelectorAll('.profile-icon').forEach(icon => {
+    icon.addEventListener('click', openProfile);
+});
 
 // ==========================================
-// Withdrawal & Transactions
+// Withdrawal Logic
 // ==========================================
-function openHistoryModal() {
-    closeProfile(); 
-    document.getElementById('history-modal').style.display = 'block';
-    fetchTransactionHistory(); 
-}
-function closeHistoryModal() { document.getElementById('history-modal').style.display = 'none'; }
-
-async function fetchTransactionHistory() {
-    const historyList = document.getElementById('history-list');
-    historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">Loading transactions...</p>';
-    const token = localStorage.getItem('sarmaya_token');
-    if (!token) { historyList.innerHTML = '<p style="text-align: center; color: red;">Authentication error.</p>'; return; }
-
-    try {
-        const response = await fetch(`${SERVER_URL}/api/transactions`, {
-            method: 'GET', headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        if (data.success) {
-            if (data.transactions.length === 0) {
-                historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px; margin-top: 20px;">No transactions found.</p>';
-                return;
-            }
-            let html = '';
-            data.transactions.forEach(tx => {
-                const date = new Date(tx.created_at).toLocaleDateString('en-GB'); 
-                const isPositive = (tx.transaction_type === 'Deposit' || tx.transaction_type === 'Commission' || tx.transaction_type === 'Refund');
-                const color = isPositive ? '#28a745' : '#dc3545';
-                const sign = isPositive ? '+' : '-';
-                html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee;">
-                        <div>
-                            <strong style="color: #333; font-size: 14px;">${tx.transaction_type}</strong>
-                            <p style="color: #777; font-size: 12px; margin: 3px 0 0 0;">${date} • ${tx.description || ''}</p>
-                        </div>
-                        <div style="color: ${color}; font-weight: bold; font-size: 15px;">${sign}$${parseFloat(tx.amount).toFixed(2)}</div>
-                    </div>
-                `;
-            });
-            historyList.innerHTML = html;
-        } else { historyList.innerHTML = '<p style="text-align: center; color: red;">Failed to load history.</p>'; }
-    } catch (error) { historyList.innerHTML = '<p style="text-align: center; color: red;">Server connection error.</p>'; }
-}
-
 function openWithdrawalModal() {
     closeProfile(); 
     document.getElementById('withdrawal-modal').style.display = 'block';
     document.getElementById('withdraw-message').innerText = ''; 
     document.getElementById('withdrawalForm').reset(); 
 }
-function closeWithdrawalModal() { document.getElementById('withdrawal-modal').style.display = 'none'; }
+
+function closeWithdrawalModal() {
+    document.getElementById('withdrawal-modal').style.display = 'none';
+}
 
 async function submitWithdrawal(event) {
     event.preventDefault(); 
+    
     const messageBox = document.getElementById('withdraw-message');
+    
     messageBox.style.color = '#007bff';
     messageBox.style.display = 'block';
     messageBox.innerText = '⏳ Processing request... Please wait.';
@@ -690,6 +708,7 @@ async function submitWithdrawal(event) {
         const amount = parseFloat(document.getElementById('withdraw-amount').value);
         const method = document.getElementById('withdraw-method').value;
         const details = document.getElementById('withdraw-details').value;
+        
         const token = localStorage.getItem('sarmaya_token');
         if (!token) {
             messageBox.style.color = '#dc3545';
@@ -699,21 +718,116 @@ async function submitWithdrawal(event) {
 
         const response = await fetch(`${SERVER_URL}/api/withdraw`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ amount: amount, payment_method: method, payment_details: details })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                amount: amount,
+                payment_method: method,
+                payment_details: details
+            })
         });
         
         const data = await response.json();
+        
         if (data.success) {
             messageBox.style.color = '#28a745'; 
             messageBox.innerText = '✅ ' + data.message;
-            setTimeout(() => { closeWithdrawalModal(); loadDashboard(); }, 2000);
+            
+            setTimeout(() => {
+                closeWithdrawalModal();
+                loadDashboard(); 
+            }, 2000);
         } else {
             messageBox.style.color = '#dc3545'; 
             messageBox.innerText = '❌ ' + (data.error || "Request failed.");
         }
     } catch (error) {
+        console.error("Withdrawal error:", error);
         messageBox.style.color = '#dc3545';
         messageBox.innerText = '❌ Server connection error. Please try again.';
+    }
+}
+
+// ==========================================
+// Bidding & Pool Status Engine (NEWLY ADDED)
+// ==========================================
+
+// Abhi ke liye hum active pool id 1 maan kar chal rahe hain. 
+// Aage chalkar ise dashboard me chune gaye pool se connect kiya ja sakta hai.
+const CURRENT_POOL_ID = 1; 
+
+async function submitMyBid() {
+    const amount = document.getElementById('bidAmount').value;
+    const messageBox = document.getElementById('bidMessage');
+    const token = localStorage.getItem('sarmaya_token'); 
+    const userId = localStorage.getItem('sarmaya_user_id');
+
+    if (!amount || amount <= 0) {
+        messageBox.style.color = "red";
+        messageBox.innerText = "Please enter a valid amount.";
+        return;
+    }
+
+    if (!token) {
+        messageBox.style.color = "red";
+        messageBox.innerText = "Please login first.";
+        return;
+    }
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/bidding/submit`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                pool_id: CURRENT_POOL_ID,
+                user_id: userId,
+                bid_amount: amount
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            messageBox.style.color = "green";
+            messageBox.innerText = data.message;
+            fetchPoolStatus(); 
+        } else {
+            messageBox.style.color = "red";
+            messageBox.innerText = data.error || "Failed to submit bid.";
+        }
+    } catch (error) {
+        messageBox.style.color = "red";
+        messageBox.innerText = "Server error. Try again later.";
+    }
+}
+
+async function fetchPoolStatus() {
+    const token = localStorage.getItem('sarmaya_token'); 
+    
+    if (!token) return; // User login nahi hai toh status na laaye
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/pool/status/${CURRENT_POOL_ID}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('poolStatus').innerText = data.pool.status;
+            document.getElementById('poolMembers').innerText = data.pool.current_members;
+            document.getElementById('maxMembers').innerText = data.pool.max_members;
+            document.getElementById('totalBids').innerText = data.total_bids_placed;
+        }
+    } catch (error) {
+        console.error("Error fetching status:", error);
+        document.getElementById('poolStatus').innerText = "Connection Error";
     }
 }
