@@ -12,7 +12,7 @@ setTimeout(() => {
 }, 3000); 
 
 // ==========================================
-// 3. URL Referral Capture (Auto-fill)
+// 3. NAYA: URL Referral Capture (Auto-fill)
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -28,7 +28,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// Screen Switcher
+// Screen Switcher (Toggle Log In / Sign Up / OTP)
 // ==========================================
 function toggleScreens(screenName) {
     const signupScreen = document.getElementById('signup-section');
@@ -49,7 +49,7 @@ function toggleScreens(screenName) {
 }
 
 // ==========================================
-// User Signup Logic
+// UPDATED: User Signup Logic (With Referral)
 // ==========================================
 async function registerUser(event) {
     event.preventDefault(); 
@@ -58,8 +58,11 @@ async function registerUser(event) {
     const email = document.getElementById('reg-email').value;
     const mobile = document.getElementById('reg-mobile').value;
     const password = document.getElementById('reg-password').value;
+    
+    // Form se referral code uthayein
     const refInput = document.getElementById('reg-referral');
     const referral_code = refInput ? refInput.value.trim() : ''; 
+
     const messageBox = document.getElementById('signup-message');
 
     messageBox.style.color = "#FFD700";
@@ -180,7 +183,7 @@ async function loginUser(event) {
             const walletBalance = document.getElementById('wallet-balance');
             if(walletBalance) walletBalance.innerText = `$${data.user.wallet_balance}`;
             
-            loadDashboard(); 
+            loadDashboard(); // Load data on login
         } else {
             messageBox.style.color = "#dc3545";
             messageBox.innerText = `⚠️ Error: ${data.error}`;
@@ -193,7 +196,7 @@ async function loginUser(event) {
 }
 
 // ==========================================
-// App Navigation
+// App Navigation & Logic
 // ==========================================
 function switchTab(tabName) {
     document.getElementById('dashboard-screen').style.display = 'none';
@@ -217,7 +220,6 @@ function switchTab(tabName) {
     } else if(tabName === 'payouts') {
         document.getElementById('payouts-screen').style.display = 'flex';
         document.getElementById('nav-payouts').classList.add('active');
-        fetchPoolStatus(); // Load pool status when tab is opened
     }
 }
 
@@ -362,7 +364,7 @@ async function createCustomPool() {
 }
 
 // ==========================================
-// Wallet Deposit Logic
+// Wallet Deposit Logic (Add Funds) - FIXED
 // ==========================================
 function openDepositModal() {
     document.getElementById('depositModal').style.display = 'block';
@@ -377,6 +379,8 @@ function closeDepositModal() {
 async function submitDeposit() {
     const amount = document.getElementById('depositAmount').value;
     const utr = document.getElementById('depositUtr').value;
+    
+    // FIX 1: Token variable ka naam 'sarmaya_token' hona chahiye
     const token = localStorage.getItem('sarmaya_token'); 
 
     if (!amount || amount <= 0 || !utr) {
@@ -390,6 +394,7 @@ async function submitDeposit() {
     }
 
     try {
+        // FIX 2: SERVER_URL variable ka use kiya
         const response = await fetch(`${SERVER_URL}/api/deposit`, {
             method: 'POST',
             headers: {
@@ -408,6 +413,8 @@ async function submitDeposit() {
         if (data.success) {
             alert("✅ " + data.message);
             closeDepositModal();
+            // Optional: Request bhejne ke baad history wagarah load karwane ke liye
+            // loadDashboard();
         } else {
             alert("⚠️ Error: " + data.error);
         }
@@ -417,13 +424,14 @@ async function submitDeposit() {
     }
 }
 
+
 // ==========================================
-// Transaction History
+// Transaction History Logic
 // ==========================================
 function openHistoryModal() {
-    closeProfile();
+    closeProfile(); // Profile menu band karein
     document.getElementById('history-modal').style.display = 'block';
-    fetchTransactionHistory(); 
+    fetchTransactionHistory(); // API call karein
 }
 
 function closeHistoryModal() {
@@ -486,11 +494,11 @@ async function fetchTransactionHistory() {
 }
 
 // ==========================================
-// Dashboard Logic
+// Dashboard Load (SECURED)
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
-    const token = localStorage.getItem('sarmaya_token'); 
+    const token = localStorage.getItem('sarmaya_token'); // Token zaroori hai
     let balance = localStorage.getItem('sarmaya_balance') || 0;
     
     document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(balance).toFixed(2)}`);
@@ -499,10 +507,10 @@ async function loadDashboard() {
 
     try {
         const response = await fetch(`${SERVER_URL}/api/dashboard`, {
-            method: 'GET', 
+            method: 'GET', // POST ki jagah ab humein secure GET use karna hai
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}` // Token bhej rahe hain
             }
         });
         const data = await response.json();
@@ -524,6 +532,9 @@ async function loadDashboard() {
     }
 }
 
+// ==========================================
+// Fetch User's Joined Pools 
+// ==========================================
 async function fetchMyPools() {
     const token = localStorage.getItem('sarmaya_token');
     if (!token) return;
@@ -569,7 +580,7 @@ async function fetchMyPools() {
 }
 
 // ==========================================
-// Profile & Referral Fetch
+// Profile & Referral Fetch Logic
 // ==========================================
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
@@ -592,24 +603,10 @@ async function openProfile() {
                 if (profileName) profileName.innerText = userData.name;
                 
                 const profileEmail = document.getElementById('profile-email');
-                if (profileEmail) {
-                    // Store real email for unmasking
-                    profileEmail.dataset.full = userData.email;
-                    // Masking logic
-                    const eParts = userData.email.split('@');
-                    profileEmail.dataset.masked = eParts[0].substring(0, 2) + "****@" + eParts[1];
-                    profileEmail.innerText = profileEmail.dataset.masked;
-                }
+                if (profileEmail) profileEmail.innerText = userData.email;
                 
                 const profileMobile = document.getElementById('profile-mobile');
-                if (profileMobile) {
-                    // Store real mobile for unmasking
-                    profileMobile.dataset.full = "+91 " + userData.mobile_number;
-                    // Masking logic
-                    const maskedMob = userData.mobile_number.substring(0, 2) + "******" + userData.mobile_number.substring(8);
-                    profileMobile.dataset.masked = "+91 " + maskedMob;
-                    profileMobile.innerText = profileMobile.dataset.masked;
-                }
+                if (profileMobile) profileMobile.innerText = "+91 " + userData.mobile_number;
                 
                 const uniqueId = "SS-" + (1000 + parseInt(userData.id)); 
                 const profileUid = document.getElementById('profile-uid');
@@ -646,23 +643,6 @@ async function loadReferralData() {
             const inviteLink = `${window.location.origin}?ref=${data.referral_code}`;
             const linkInput = document.getElementById('invite-link');
             if(linkInput) linkInput.value = inviteLink;
-
-            // NAYA: Dynamically Set Social Links
-            const shareMessage = encodeURIComponent(`Join Sarmaya Saathi and start saving! Use my code: ${data.referral_code}`);
-            const appLink = encodeURIComponent(window.location.origin);
-            
-            if(document.getElementById('share-whatsapp')) {
-                document.getElementById('share-whatsapp').href = `https://wa.me/?text=${shareMessage}%20${appLink}`;
-            }
-            if(document.getElementById('share-facebook')) {
-                document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${appLink}`;
-            }
-            if(document.getElementById('share-twitter')) {
-                document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${shareMessage}&url=${appLink}`;
-            }
-            if(document.getElementById('share-instagram')) {
-                document.getElementById('share-instagram').href = `https://www.instagram.com/`;
-            }
         }
     } catch (error) {
         console.error("Referral fetch error:", error);
@@ -708,6 +688,7 @@ function logoutUser() {
     window.location.reload(); 
 }
 
+// Har screen ke profile icon par click event jodne ke liye
 document.querySelectorAll('.profile-icon').forEach(icon => {
     icon.addEventListener('click', openProfile);
 });
@@ -716,10 +697,10 @@ document.querySelectorAll('.profile-icon').forEach(icon => {
 // Withdrawal Logic
 // ==========================================
 function openWithdrawalModal() {
-    closeProfile(); 
+    closeProfile(); // Profile menu band karein
     document.getElementById('withdrawal-modal').style.display = 'block';
-    document.getElementById('withdraw-message').innerText = ''; 
-    document.getElementById('withdrawalForm').reset(); 
+    document.getElementById('withdraw-message').innerText = ''; // Purana message clear karein
+    document.getElementById('withdrawalForm').reset(); // Form clear karein
 }
 
 function closeWithdrawalModal() {
@@ -727,7 +708,7 @@ function closeWithdrawalModal() {
 }
 
 async function submitWithdrawal(event) {
-    event.preventDefault(); 
+    event.preventDefault(); // Page refresh hone se rokein
     
     const messageBox = document.getElementById('withdraw-message');
     
@@ -778,159 +759,5 @@ async function submitWithdrawal(event) {
         console.error("Withdrawal error:", error);
         messageBox.style.color = '#dc3545';
         messageBox.innerText = '❌ Server connection error. Please try again.';
-    }
-}
-
-// ==========================================
-// Bidding & Pool Status Engine (NEWLY ADDED)
-// ==========================================
-
-const CURRENT_POOL_ID = 1; 
-
-async function submitMyBid() {
-    const amount = document.getElementById('bidAmount').value;
-    const messageBox = document.getElementById('bidMessage');
-    const token = localStorage.getItem('sarmaya_token'); 
-    const userId = localStorage.getItem('sarmaya_user_id');
-
-    if (!amount || amount <= 0) {
-        messageBox.style.color = "red";
-        messageBox.innerText = "Please enter a valid amount.";
-        return;
-    }
-
-    if (!token) {
-        messageBox.style.color = "red";
-        messageBox.innerText = "Please login first.";
-        return;
-    }
-
-    try {
-        const response = await fetch(`${SERVER_URL}/api/bidding/submit`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                pool_id: CURRENT_POOL_ID,
-                user_id: userId,
-                bid_amount: amount
-            })
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-            messageBox.style.color = "green";
-            messageBox.innerText = data.message;
-            fetchPoolStatus(); 
-        } else {
-            messageBox.style.color = "red";
-            messageBox.innerText = data.error || "Failed to submit bid.";
-        }
-    } catch (error) {
-        messageBox.style.color = "red";
-        messageBox.innerText = "Server error. Try again later.";
-    }
-}
-
-async function fetchPoolStatus() {
-    const token = localStorage.getItem('sarmaya_token'); 
-    
-    if (!token) return;
-
-    try {
-        const response = await fetch(`${SERVER_URL}/api/pool/status/${CURRENT_POOL_ID}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        const data = await response.json();
-
-        if (data.success) {
-            document.getElementById('poolStatus').innerText = data.pool.status;
-            document.getElementById('poolMembers').innerText = data.pool.current_members;
-            document.getElementById('maxMembers').innerText = data.pool.max_members;
-            document.getElementById('totalBids').innerText = data.total_bids_placed;
-        }
-    } catch (error) {
-        console.error("Error fetching status:", error);
-        document.getElementById('poolStatus').innerText = "Connection Error";
-    }
-}
-
-// ==========================================
-// 🛡️ NAYA: Privacy Toggle & Change Password
-// ==========================================
-
-function togglePrivacy(elementId, iconElement) {
-    const el = document.getElementById(elementId);
-    if (el.innerText.includes('*')) {
-        el.innerText = el.dataset.full; // Show
-        iconElement.classList.remove('fa-eye-slash');
-        iconElement.classList.add('fa-eye');
-    } else {
-        el.innerText = el.dataset.masked; // Hide
-        iconElement.classList.remove('fa-eye');
-        iconElement.classList.add('fa-eye-slash');
-    }
-}
-
-function openChangePasswordModal() {
-    closeProfile();
-    document.getElementById('change-password-modal').style.display = 'block';
-}
-
-function closeChangePasswordModal() {
-    document.getElementById('change-password-modal').style.display = 'none';
-}
-
-async function submitChangePassword(event) {
-    event.preventDefault();
-    const oldPwd = document.getElementById('old-pwd').value;
-    const newPwd = document.getElementById('new-pwd').value;
-    const confirmPwd = document.getElementById('confirm-new-pwd').value;
-    const msgBox = document.getElementById('change-pwd-msg');
-
-    if (newPwd !== confirmPwd) {
-        msgBox.style.color = 'red';
-        msgBox.innerText = "New Password aur Confirm Password match nahi ho rahe.";
-        return;
-    }
-    
-    const token = localStorage.getItem('sarmaya_token');
-    
-    msgBox.style.color = '#007bff';
-    msgBox.innerText = 'Updating password...';
-
-    try {
-        const response = await fetch(`${SERVER_URL}/api/change-password`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
-        });
-        
-        const data = await response.json();
-        
-        if(data.success) {
-            msgBox.style.color = 'green';
-            msgBox.innerText = "✅ Password successfully update ho gaya!";
-            setTimeout(() => { 
-                closeChangePasswordModal(); 
-                document.getElementById('changePasswordForm').reset(); 
-                msgBox.innerText = ''; 
-            }, 2000);
-        } else { 
-            msgBox.style.color = 'red'; 
-            msgBox.innerText = "❌ " + data.error; 
-        }
-    } catch (error) { 
-        msgBox.style.color = 'red'; 
-        msgBox.innerText = "❌ Server error. Try again."; 
     }
 }
