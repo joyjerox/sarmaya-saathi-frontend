@@ -50,18 +50,19 @@
     const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; 
 
     // ==========================================
-    // 🔒 ADVANCED SECURITY: Check Admin Token First
+    // 🔒 ADVANCED SECURITY: HttpOnly Cookie Logic
     // ==========================================
-    const adminToken = localStorage.getItem('sarmaya_admin_token');
-    
-    // Agar token nahi mila, toh seedha login page par phek do
-    if (!adminToken) {
-        window.location.replace('admin-login.html');
-    }
+    // Kyunki ab token HttpOnly Cookie me hai, JavaScript use direct read nahi kar sakti.
+    // Isliye API request fail (401) hone par hum assume karenge ki token nahi hai.
 
-    // Logout Function
-    function logoutAdmin() {
-        localStorage.removeItem('sarmaya_admin_token');
+    // Logout Function (Ab API se cookie clear hogi)
+    async function logoutAdmin() {
+        try {
+            await fetch(`${SERVER_URL}/api/admin/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (error) { console.log("Logout request failed"); }
         window.location.replace('admin-login.html');
     }
 
@@ -73,16 +74,14 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdrawals`, {
                 method: 'GET',
-                headers: { 
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
-                }
+                credentials: 'include' // 🔒 Secure Cookie Bhejne Ke Liye
             });
             const data = await response.json();
 
-            // Agar token expire ho gaya ho ya galat ho
+            // Agar token expire ho gaya ho ya missing ho
             if (response.status === 401) {
                 alert("Session expired! Please login again.");
-                logoutAdmin();
+                window.location.replace('admin-login.html');
                 return;
             }
 
@@ -124,12 +123,17 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/withdraw/${action}`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
-                },
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // 🔒 Secure Cookie
                 body: JSON.stringify({ withdrawal_id: id })
             });
+            
+            if (response.status === 401) {
+                alert("Session expired! Please login again.");
+                window.location.replace('admin-login.html');
+                return;
+            }
+
             const data = await response.json();
             alert(data.success ? "✅ " + data.message : "⚠️ Error: " + data.error);
             loadWithdrawals(); 
@@ -144,10 +148,14 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/deposits`, {
                 method: 'GET',
-                headers: { 
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
-                }
+                credentials: 'include' // 🔒 Secure Cookie
             });
+            
+            if (response.status === 401) {
+                window.location.replace('admin-login.html');
+                return;
+            }
+            
             const data = await response.json();
 
             if (data.success) {
@@ -188,12 +196,17 @@
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/deposit/${action}`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adminToken}` // 🔒 Naya Secure Header
-                },
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // 🔒 Secure Cookie
                 body: JSON.stringify({ deposit_id: id })
             });
+
+            if (response.status === 401) {
+                alert("Session expired! Please login again.");
+                window.location.replace('admin-login.html');
+                return;
+            }
+
             const data = await response.json();
             alert(data.success ? "✅ " + data.message : "⚠️ Error: " + data.error);
             loadDeposits(); 

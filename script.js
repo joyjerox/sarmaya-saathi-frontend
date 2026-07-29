@@ -95,6 +95,7 @@ async function registerUser(event) {
         const response = await fetch(`${SERVER_URL}/api/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ name, mobile_number: mobile, email, password, referral_code })
         });
         const data = await response.json();
@@ -136,6 +137,7 @@ async function verifyOTPUser(event) {
         const response = await fetch(`${SERVER_URL}/api/verify-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ email, otp })
         });
         const data = await response.json();
@@ -173,12 +175,13 @@ async function loginUser(event) {
         const response = await fetch(`${SERVER_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // 🔒 Secure Cookie Setup
             body: JSON.stringify({ mobile_number: mobile, password: password })
         });
         const data = await response.json();
 
         if (response.ok) {
-            localStorage.setItem('sarmaya_token', data.token); 
+            // 🔒 localStorage se token store karna hata diya, ab cookie me safe rahega
             localStorage.setItem('sarmaya_user_id', data.user.id);
             localStorage.setItem('sarmaya_name', data.user.name);
             localStorage.setItem('sarmaya_mobile', data.user.mobile_number);
@@ -283,7 +286,10 @@ function checkLimits(type) {
 let globalGroupsList = []; 
 async function fetchGroups() {
     try {
-        const response = await fetch(`${SERVER_URL}/api/groups`);
+        const response = await fetch(`${SERVER_URL}/api/groups`, {
+            method: 'GET',
+            credentials: 'include'
+        });
         const data = await response.json();
         if (data.success) {
             globalGroupsList = data.groups; 
@@ -327,12 +333,12 @@ function filterGroups(cycleName, tabElement) {
 
 async function joinPool(poolId) {
     const userId = localStorage.getItem('sarmaya_user_id');
-    const token = localStorage.getItem('sarmaya_token'); 
-    if (!userId || !token) { alert("Please login again."); return; }
+    if (!userId) { alert("Please login again."); return; }
     try {
         const response = await fetch(`${SERVER_URL}/api/join-pool`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // 🔒 Secure Cookie
             body: JSON.stringify({ user_id: parseInt(userId), pool_id: parseInt(poolId) })
         });
         const data = await response.json();
@@ -353,6 +359,7 @@ async function createCustomPool() {
         const response = await fetch(`${SERVER_URL}/api/create-pool`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ amount: parseInt(amount), members: parseInt(members), cycle: cycle })
         });
         const data = await response.json();
@@ -376,15 +383,16 @@ function closeDepositModal() {
 async function submitDeposit() {
     const amount = document.getElementById('depositAmount').value;
     const utr = document.getElementById('depositUtr').value;
-    const token = localStorage.getItem('sarmaya_token'); 
+    const userId = localStorage.getItem('sarmaya_user_id');
 
     if (!amount || amount <= 0 || !utr) { alert("⚠️ Please enter a valid amount and UTR number."); return; }
-    if (!token) { alert("⚠️ You must be logged in to add money."); return; }
+    if (!userId) { alert("⚠️ You must be logged in to add money."); return; }
 
     try {
         const response = await fetch(`${SERVER_URL}/api/deposit`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // 🔒 Secure Cookie
             body: JSON.stringify({ amount: parseFloat(amount), utr_number: utr, payment_method: 'UPI' })
         });
         const data = await response.json();
@@ -400,16 +408,15 @@ async function submitDeposit() {
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
-    const token = localStorage.getItem('sarmaya_token');
     let balance = localStorage.getItem('sarmaya_balance') || 0;
     
     document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(balance).toFixed(2)}`);
-    if (!userId || !token) return;
+    if (!userId) return;
 
     try {
         const response = await fetch(`${SERVER_URL}/api/dashboard`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            credentials: 'include' // 🔒 Secure Cookie
         });
         const data = await response.json();
         
@@ -426,12 +433,12 @@ async function loadDashboard() {
 }
 
 async function fetchMyPools() {
-    const token = localStorage.getItem('sarmaya_token');
-    if (!token) return;
+    const userId = localStorage.getItem('sarmaya_user_id');
+    if (!userId) return;
     try {
         const response = await fetch(`${SERVER_URL}/api/my-pools`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            credentials: 'include' // 🔒 Secure Cookie
         });
         const data = await response.json();
 
@@ -465,12 +472,12 @@ async function fetchMyPools() {
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
 
-    const token = localStorage.getItem('sarmaya_token');
-    if(token) {
+    const userId = localStorage.getItem('sarmaya_user_id');
+    if(userId) {
         try {
             const response = await fetch(`${SERVER_URL}/api/profile`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+                credentials: 'include' // 🔒 Secure Cookie
             });
             const data = await response.json();
             if(data.success) {
@@ -560,11 +567,12 @@ function submitChangePassword(event) {
 // Referral System & Others
 // ==========================================
 async function loadReferralData() {
-    const token = localStorage.getItem('sarmaya_token');
-    if (!token) return;
+    const userId = localStorage.getItem('sarmaya_user_id');
+    if (!userId) return;
     try {
         const response = await fetch(`${SERVER_URL}/api/referrals`, {
-            method: 'GET', headers: { 'Authorization': `Bearer ${token}` }
+            method: 'GET', 
+            credentials: 'include' // 🔒 Secure Cookie
         });
         const data = await response.json();
         if (data.success) {
@@ -609,9 +617,16 @@ function copyLink() {
     if(linkInput) { linkInput.select(); document.execCommand('copy'); alert("Invitation Link Copied!"); }
 }
 
-function logoutUser() {
-    // Only removing session tokens, NOT the remember me credentials
-    localStorage.removeItem('sarmaya_token'); 
+// 🔒 LOGOUT UPDATED TO CLEAR COOKIES VIA BACKEND
+async function logoutUser() {
+    try {
+        await fetch(`${SERVER_URL}/api/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (error) { console.log("Logout request failed"); }
+
+    // Only removing local data, NOT the remember me credentials
     localStorage.removeItem('sarmaya_user_id');
     localStorage.removeItem('sarmaya_name');
     localStorage.removeItem('sarmaya_mobile');
@@ -637,12 +652,13 @@ function closeHistoryModal() { document.getElementById('history-modal').style.di
 async function fetchTransactionHistory() {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">Loading transactions...</p>';
-    const token = localStorage.getItem('sarmaya_token');
-    if (!token) { historyList.innerHTML = '<p style="text-align: center; color: red;">Authentication error.</p>'; return; }
+    const userId = localStorage.getItem('sarmaya_user_id');
+    if (!userId) { historyList.innerHTML = '<p style="text-align: center; color: red;">Authentication error.</p>'; return; }
 
     try {
         const response = await fetch(`${SERVER_URL}/api/transactions`, {
-            method: 'GET', headers: { 'Authorization': `Bearer ${token}` }
+            method: 'GET', 
+            credentials: 'include' // 🔒 Secure Cookie
         });
         const data = await response.json();
         if (data.success) {
@@ -690,8 +706,8 @@ async function submitWithdrawal(event) {
         const amount = parseFloat(document.getElementById('withdraw-amount').value);
         const method = document.getElementById('withdraw-method').value;
         const details = document.getElementById('withdraw-details').value;
-        const token = localStorage.getItem('sarmaya_token');
-        if (!token) {
+        const userId = localStorage.getItem('sarmaya_user_id');
+        if (!userId) {
             messageBox.style.color = '#dc3545';
             messageBox.innerText = 'Authentication error. Please login again.';
             return;
@@ -699,7 +715,8 @@ async function submitWithdrawal(event) {
 
         const response = await fetch(`${SERVER_URL}/api/withdraw`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // 🔒 Secure Cookie
             body: JSON.stringify({ amount: amount, payment_method: method, payment_details: details })
         });
         
