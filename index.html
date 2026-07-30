@@ -47,7 +47,6 @@
                         Don't have an account? <span class="switch-link" onclick="toggleScreens('signup')">Sign Up</span>
                     </div>
                 </div>
-"Disclaimer: This is a beta/testing application for educational purposes. Please do not enter real banking details or passwords."
 
                 <!-- ================= SIGN UP SECTION ================= -->
                 <div id="signup-section" style="display: none;">
@@ -124,7 +123,8 @@
             </div>
 
             <div class="stats-container">
-                <div class="stat-box" onclick="document.getElementById('joined-pools-section').scrollIntoView({ behavior: 'smooth' });" style="cursor: pointer;">
+                <!-- NAYA FIX: onclick="openMyGroups()" update kiya gaya -->
+                <div class="stat-box" onclick="openMyGroups()" style="cursor: pointer;">
                     <h4>My Groups</h4><p>0 Active</p>
                 </div>
                 <div class="stat-box">
@@ -247,6 +247,39 @@
         </div>
 
         <!-- ================= ALL OVERLAYS / MODALS BELOW ================= -->
+
+        <!-- NAYA FIX: MY GROUPS POPUP MODAL -->
+        <div id="my-groups-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
+            <div style="width: 90%; max-height: 85vh; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h3 style="color: #0A192F;">My Active Groups</h3>
+                    <span onclick="closeMyGroups()" style="cursor: pointer; font-size: 24px; color: #d32f2f; font-weight: bold;">✕</span>
+                </div>
+                
+                <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+                    <!-- Group Card Template -->
+                    <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="color: #0A192F; margin: 0;">Gold Saver Pool</h4>
+                            <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">Active</span>
+                        </div>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Monthly: $5,000</p>
+                        
+                        <div style="background: #f4f7f6; padding: 10px; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 5px;">
+                                <span>Joined: <span style="color:#0A192F;" id="joined-count">15</span></span>
+                                <span>Max Capacity: <span style="color:#0A192F;">20</span></span>
+                            </div>
+                            <!-- Progress Bar -->
+                            <div style="width: 100%; background: #ddd; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div id="dynamic-progress-bar" style="width: 0%; background: #4caf50; height: 100%; transition: width 0.5s ease-in-out;"></div>
+                            </div>
+                            <p style="font-size: 11px; color: #d32f2f; margin-top: 5px; text-align: right; font-weight: bold;">Only 5 spots left!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- PROFILE MENU OVERLAY -->
         <div id="profile-menu" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 50;">
@@ -379,12 +412,12 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation Bar -->
+        <!-- Bottom Navigation Bar (NAYA FIX: SwitchTab integration for refer) -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 Home</div>
             <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">👥 Groups</div>
             <div class="nav-item" id="nav-payouts" onclick="switchTab('payouts')">💰 Payouts</div>
-            <div class="nav-item" id="nav-referrals" onclick="openReferralScreen()">🤝 Refer</div>
+            <div class="nav-item" id="nav-referrals" onclick="switchTab('referrals')">🤝 Refer</div>
         </div>
 
     </div>

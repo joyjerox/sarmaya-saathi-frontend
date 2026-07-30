@@ -219,7 +219,7 @@ async function loginUser(event) {
 }
 
 // ==========================================
-// App Navigation
+// App Navigation (NAYA FIX: Added Referrals inside switchTab)
 // ==========================================
 function switchTab(tabName) {
     document.getElementById('dashboard-screen').style.display = 'none';
@@ -245,6 +245,11 @@ function switchTab(tabName) {
     } else if(tabName === 'payouts') {
         document.getElementById('payouts-screen').style.display = 'flex';
         document.getElementById('nav-payouts').classList.add('active');
+    } else if(tabName === 'referrals') {
+        closeProfile();
+        document.getElementById('referral-screen').style.display = 'flex';
+        if (navReferrals) navReferrals.classList.add('active');
+        loadReferralData();
     }
 }
 
@@ -256,6 +261,56 @@ function openJoinScreen() {
 function closeJoinScreen() {
     document.getElementById('join-group-screen').style.display = 'none';
     document.getElementById('groups-screen').style.display = 'flex';
+}
+
+// NAYA FIX: My Groups Popup Controls & API Trigger
+function openMyGroups(groupId = 1) { // Default 1 for testing
+    document.getElementById('my-groups-modal').style.display = 'block';
+    
+    // API Call trigger jaise hi popup khulega
+    fetchGroupStats(groupId); 
+}
+
+function closeMyGroups() {
+    document.getElementById('my-groups-modal').style.display = 'none';
+}
+
+// ==========================================
+// Dynamic Group Stats Fetcher (NAYA UPDATE)
+// ==========================================
+async function fetchGroupStats(groupId) {
+    const joinedCountEl = document.getElementById('joined-count');
+    
+    // Loading state dikhane ke liye
+    if (joinedCountEl) {
+        joinedCountEl.innerText = "..."; 
+    }
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/group-stats/${groupId}`, {
+            method: 'GET',
+            credentials: 'include' // 🔒 Secure Cookie
+        });
+        
+        const data = await response.json();
+
+        if (data.success && joinedCountEl) {
+            // UI Update with real count
+            joinedCountEl.innerText = data.joined_count;
+
+            // Progress bar update
+            const maxCapacity = 20; // Agar maxCapacity bhi DB se aa rahi ho to 'data.max_capacity' lagayein
+            const fillPercentage = (data.joined_count / maxCapacity) * 100;
+            const progressBar = document.getElementById('dynamic-progress-bar');
+            
+            if(progressBar) {
+                progressBar.style.width = `${fillPercentage}%`;
+            }
+        }
+    } catch (error) {
+        console.error("Failed to fetch joined count:", error);
+        if (joinedCountEl) joinedCountEl.innerText = "Error";
+    }
 }
 
 function syncInputs(type, source) {
@@ -585,31 +640,6 @@ async function loadReferralData() {
             if(linkInput) linkInput.value = inviteLink;
         }
     } catch (error) { console.error("Referral fetch error:", error); }
-}
-
-function openReferralScreen() {
-    closeProfile();
-    document.getElementById('dashboard-screen').style.display = 'none';
-    document.getElementById('groups-screen').style.display = 'none';
-    document.getElementById('payouts-screen').style.display = 'none';
-    document.getElementById('join-group-screen').style.display = 'none';
-    
-    document.getElementById('nav-home').classList.remove('active');
-    document.getElementById('nav-groups').classList.remove('active');
-    document.getElementById('nav-payouts').classList.remove('active');
-    const navReferrals = document.getElementById('nav-referrals');
-    if (navReferrals) navReferrals.classList.add('active');
-
-    document.getElementById('referral-screen').style.display = 'flex';
-    loadReferralData(); 
-}
-
-function closeReferralScreen() {
-    document.getElementById('referral-screen').style.display = 'none';
-    document.getElementById('dashboard-screen').style.display = 'flex';
-    const navReferrals = document.getElementById('nav-referrals');
-    if (navReferrals) navReferrals.classList.remove('active');
-    document.getElementById('nav-home').classList.add('active');
 }
 
 function copyLink() {
