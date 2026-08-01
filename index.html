@@ -56,6 +56,17 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             font-size: 14px;
         }
+
+        /* NAYA FIX: Smooth Fade In for Details */
+        .pool-details-box {
+            display: none;
+            margin-top: 12px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>

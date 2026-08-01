@@ -52,6 +52,18 @@ function applyLanguage() {
 }
 
 // ==========================================
+// Toggle Details Function
+// ==========================================
+function togglePoolDetails(elementId) {
+    const detailBox = document.getElementById(elementId);
+    if (detailBox.style.display === 'none' || detailBox.style.display === '') {
+        detailBox.style.display = 'block';
+    } else {
+        detailBox.style.display = 'none';
+    }
+}
+
+// ==========================================
 // Biometric (Fingerprint) Security
 // ==========================================
 async function verifyBiometric(reasonText) {
@@ -354,7 +366,7 @@ function closeJoinScreen() {
 }
 
 // ==========================================
-// MY GROUPS MODAL (Detailed View + Live Real Backend Loop)
+// MY GROUPS MODAL (Hidden Details + Winning Amount)
 // ==========================================
 function openMyGroups() { 
     document.getElementById('my-groups-modal').style.display = 'block';
@@ -387,18 +399,20 @@ async function fetchMyPoolsForModal() {
             listContainer.innerHTML = ''; 
             data.my_pools.forEach(pool => {
                 const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Sarmaya Pool');
-                
+                const pAmount = pool.pool_amount || pool.amount;
                 const maxMem = pool.max_members || 20;
-                // Get real joined count from array length if exists, else fallback
                 const joinedMem = pool.joined_count || (pool.members ? pool.members.length : 0);
                 const slotsLeft = maxMem - joinedMem;
                 const progress = (joinedMem / maxMem) * 100;
 
-                // Real Backend Data Loop for Members
+                // Wining amount calculation
+                const winningAmount = pAmount * maxMem;
+                const detailsBoxId = `modal-details-${pool.id}`;
+
                 let membersListHtml = '';
                 if (pool.members && Array.isArray(pool.members) && pool.members.length > 0) {
                     membersListHtml = `<div style="margin-top: 10px; max-height: 120px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee;">
-                        <strong style="font-size: 12px; color: #0A192F; display: block; margin-bottom: 5px;">Joined Members:</strong>`;
+                        <strong style="font-size: 12px; color: #0A192F; display: block; margin-bottom: 5px;">Joined Members List:</strong>`;
                     pool.members.forEach((m, idx) => {
                         let jDate = m.joined_at ? new Date(m.joined_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
                         let jTime = m.joined_at ? new Date(m.joined_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
@@ -420,7 +434,7 @@ async function fetchMyPoolsForModal() {
                     <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h4 style="color: #0A192F; margin: 0;">${poolName}</h4>
-                            <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">₹${pool.pool_amount || pool.amount}</span>
+                            <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">₹${pAmount}</span>
                         </div>
 
                         <!-- Progress Section -->
@@ -437,8 +451,17 @@ async function fetchMyPoolsForModal() {
                             </p>
                         </div>
                         
-                        <!-- Real Members List Appended Here -->
-                        ${membersListHtml}
+                        <button onclick="togglePoolDetails('${detailsBoxId}')" style="width: 100%; margin-top: 12px; background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                            👁️ View Pool Details
+                        </button>
+                        
+                        <div id="${detailsBoxId}" class="pool-details-box">
+                            <div style="background: #e8f5e9; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #c8e6c9; text-align: center;">
+                                <strong style="color: #2e7d32; font-size: 14px;">🏆 Estimated Winning: ₹${winningAmount}</strong>
+                                <p style="font-size: 11px; color: #4caf50; margin: 3px 0 0 0;">(Based on ${maxMem} members)</p>
+                            </div>
+                            ${membersListHtml}
+                        </div>
                     </div>
                 `;
             });
@@ -611,7 +634,7 @@ async function submitDeposit() {
 }
 
 // ==========================================
-// Dashboard Load (NAYA FIX: Joined Pools Detailed List from Backend)
+// Dashboard Load (Hidden Details + Winning Amount)
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
@@ -659,18 +682,20 @@ async function fetchMyPools() {
             listContainer.innerHTML = ''; 
             data.my_pools.forEach(pool => {
                 const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Custom Pool');
-                
+                const pAmount = pool.pool_amount || pool.amount;
                 const maxMem = pool.max_members || 20;
-                // Get real joined count from array length if exists
                 const joinedMem = pool.joined_count || (pool.members ? pool.members.length : 0); 
                 const slotsLeft = maxMem - joinedMem;
                 const progress = (joinedMem / maxMem) * 100;
+                
+                // Winning amount calculation
+                const winningAmount = pAmount * maxMem;
+                const detailsBoxId = `dash-details-${pool.id}`;
 
-                // Real Backend Data Loop for Members
                 let membersListHtml = '';
                 if (pool.members && Array.isArray(pool.members) && pool.members.length > 0) {
                     membersListHtml = `<div style="margin-top: 10px; max-height: 120px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee;">
-                        <strong style="font-size: 12px; color: #0A192F; display: block; margin-bottom: 5px;">Joined Members:</strong>`;
+                        <strong style="font-size: 12px; color: #0A192F; display: block; margin-bottom: 5px;">Joined Members List:</strong>`;
                     pool.members.forEach((m, idx) => {
                         let jDate = m.joined_at ? new Date(m.joined_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
                         let jTime = m.joined_at ? new Date(m.joined_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
@@ -695,7 +720,7 @@ async function fetchMyPools() {
                                 <strong style="color: #0A192F; font-size: 16px;">${poolName}</strong>
                                 <p class="date" style="margin-top: 5px;">Cycle: ${pool.cycle || 'Weekly'}</p>
                             </div>
-                            <div class="activity-amount positive" style="font-size: 18px; font-weight: bold; color: #28a745;">₹${pool.pool_amount || pool.amount}</div>
+                            <div class="activity-amount positive" style="font-size: 18px; font-weight: bold; color: #28a745;">₹${pAmount}</div>
                         </div>
 
                         <!-- Progress Section -->
@@ -712,8 +737,17 @@ async function fetchMyPools() {
                             </p>
                         </div>
                         
-                        <!-- Real Members List Appended Here -->
-                        ${membersListHtml}
+                        <button onclick="togglePoolDetails('${detailsBoxId}')" style="width: 100%; margin-top: 12px; background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                            👁️ View Pool Details
+                        </button>
+                        
+                        <div id="${detailsBoxId}" class="pool-details-box">
+                            <div style="background: #e8f5e9; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #c8e6c9; text-align: center;">
+                                <strong style="color: #2e7d32; font-size: 14px;">🏆 Estimated Winning: ₹${winningAmount}</strong>
+                                <p style="font-size: 11px; color: #4caf50; margin: 3px 0 0 0;">(Based on ${maxMem} members)</p>
+                            </div>
+                            ${membersListHtml}
+                        </div>
                     </div>
                 `;
             });
