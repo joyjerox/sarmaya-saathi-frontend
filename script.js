@@ -30,7 +30,7 @@ async function verifyBiometric(reasonText) {
 }
 
 // ==========================================
-// NAYA FIX: Biometric Login button function
+// Biometric Login button function
 // ==========================================
 async function biometricLogin() {
     const savedMobile = localStorage.getItem('sarmaya_remember_mobile');
@@ -45,7 +45,6 @@ async function biometricLogin() {
     if (isAuthorized) {
         document.getElementById('login-mobile').value = savedMobile;
         document.getElementById('login-password').value = savedPassword;
-        // Trigger the login form submission silently
         document.getElementById('loginForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     }
 }
@@ -322,43 +321,76 @@ function closeJoinScreen() {
     document.getElementById('groups-screen').style.display = 'flex';
 }
 
-function openMyGroups(groupId = 1) { 
+// NAYA FIX: Fetch and display USER'S ACTUAL JOINED POOLS inside the My Groups modal
+function openMyGroups() { 
     document.getElementById('my-groups-modal').style.display = 'block';
-    fetchGroupStats(groupId); 
+    fetchMyPoolsForModal(); 
 }
 
 function closeMyGroups() {
     document.getElementById('my-groups-modal').style.display = 'none';
 }
 
-// ==========================================
-// Dynamic Group Stats Fetcher 
-// ==========================================
-async function fetchGroupStats(groupId) {
-    const joinedCountEl = document.getElementById('joined-count');
+async function fetchMyPoolsForModal() {
+    const listContainer = document.getElementById('my-groups-modal-list');
+    if(listContainer) listContainer.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px; padding: 20px;">Loading your pools...</p>';
     
-    if (joinedCountEl) {
-        joinedCountEl.innerText = "..."; 
-    }
+    const userId = localStorage.getItem('sarmaya_user_id');
+    if (!userId) return;
 
     try {
-        const response = await fetch(`${SERVER_URL}/api/group-stats/${groupId}`, {
+        const response = await fetch(`${SERVER_URL}/api/my-pools`, {
             method: 'GET',
             credentials: 'include' 
         });
-        
         const data = await response.json();
 
+        if (data.success && listContainer) {
+            if (data.my_pools.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; font-size: 14px; color: #666; padding: 20px;">You haven\'t joined any active groups yet.</p>';
+                return;
+            }
+            listContainer.innerHTML = ''; 
+            data.my_pools.forEach(pool => {
+                listContainer.innerHTML += `
+                    <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="color: #0A192F; margin: 0;">${pool.name || 'Custom Pool'}</h4>
+                            <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">Active</span>
+                        </div>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cycle: ${pool.cycle || 'Weekly'} | Amount: $${pool.pool_amount || pool.amount}</p>
+                        
+                        <div style="background: #f4f7f6; padding: 10px; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 5px;">
+                                <span>Total Members:</span>
+                                <span style="color:#0A192F;">${pool.max_members || 10}</span>
+                            </div>
+                            <div style="width: 100%; background: #ddd; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="width: 100%; background: #4caf50; height: 100%; transition: width 0.5s ease-in-out;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    } catch (error) {
+        if(listContainer) listContainer.innerHTML = '<p style="color: red; text-align: center;">Failed to load pools.</p>';
+    }
+}
+
+// Fallback logic kept safely
+async function fetchGroupStats(groupId) {
+    const joinedCountEl = document.getElementById('joined-count');
+    if (joinedCountEl) { joinedCountEl.innerText = "..."; }
+    try {
+        const response = await fetch(`${SERVER_URL}/api/group-stats/${groupId}`, { method: 'GET', credentials: 'include' });
+        const data = await response.json();
         if (data.success && joinedCountEl) {
             joinedCountEl.innerText = data.joined_count;
-
             const maxCapacity = 20; 
             const fillPercentage = (data.joined_count / maxCapacity) * 100;
             const progressBar = document.getElementById('dynamic-progress-bar');
-            
-            if(progressBar) {
-                progressBar.style.width = `${fillPercentage}%`;
-            }
+            if(progressBar) { progressBar.style.width = `${fillPercentage}%`; }
         }
     } catch (error) {
         console.error("Failed to fetch joined count:", error);
@@ -631,7 +663,7 @@ async function openProfile() {
     }
 }
 
-// NAYA FIX: Back to Profile Sub-menu Function
+// Back to Profile Sub-menu Function
 function backToProfile(modalId) {
     document.getElementById(modalId).style.display = 'none';
     document.getElementById('profile-menu').style.display = 'block';
@@ -706,7 +738,7 @@ async function loadReferralData() {
             const walletAmountEl = document.querySelector('#referral-screen .wallet-amount');
             if(walletAmountEl) walletAmountEl.innerText = `$${data.commission_earned}`;
             const activityAmountEl = document.querySelector('#referral-screen .activity-amount');
-            if(activityAmountEl) activityAmountEl.innerText = `${data.team_size} Members`;
+            if(activityAmountEl) activityAmountEl.innerText = `${data.team_size}`; // Removed "Members" to fit new design
             const inviteLink = `${window.location.origin}?ref=${data.referral_code}`;
             const linkInput = document.getElementById('invite-link');
             if(linkInput) linkInput.value = inviteLink;
@@ -719,7 +751,6 @@ function copyLink() {
     if(linkInput) { linkInput.select(); document.execCommand('copy'); alert("Invitation Link Copied!"); }
 }
 
-// NAYA FIX: Social Sharing Logic
 function shareSocial(platform) {
     const link = document.getElementById('invite-link').value;
     const text = "Join me on Sarmaya Saathi and start saving together! Use my link: ";

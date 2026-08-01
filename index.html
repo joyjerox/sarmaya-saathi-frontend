@@ -130,7 +130,8 @@
                 <div class="stat-box" onclick="openMyGroups()" style="cursor: pointer;">
                     <h4>My Groups</h4><p>0 Active</p>
                 </div>
-                <div class="stat-box">
+                <!-- NAYA FIX: Referral Box Clickable -->
+                <div class="stat-box" onclick="switchTab('referrals')" style="cursor: pointer;">
                     <h4>Referrals</h4><p id="dashboard-referral-earnings">$0</p>
                 </div>
             </div>
@@ -222,54 +223,123 @@
             <p style="text-align: center; font-size: 12px; color: #666; padding: 20px;">*Platform fee of 2% applies to all payouts.</p>
         </div>
 
-        <!-- ================= REFERRAL SYSTEM SCREEN (RESTORED OLD DESIGN + SOCIAL ICONS) ================= -->
+        <!-- ================= REFERRAL SYSTEM SCREEN (UPDATED IMAGE DESIGN) ================= -->
         <div id="referral-screen" class="screen scrollable-screen" style="display: none; padding-bottom: 80px; background: #f4f7f6;">
-            <div class="header">
-                <h3 onclick="switchTab('home')" style="cursor: pointer;">⬅ Back</h3>
-                <h3>Refer & Earn</h3>
-            </div>
-            <div class="wallet-card" style="margin-top: 20px;">
-                <p>Total Commission Earned</p>
-                <h1 class="wallet-amount" style="font-size: 32px;">$0.00</h1>
-            </div>
-            <div class="join-box" style="text-align: center; margin-top: 10px;">
-                <h4 style="color: #0A192F;">Invite Friends, Build Team</h4>
-                <p style="font-size: 14px; color: #666; margin: 10px 0;">Share your unique link. Earn commission when they join a pool!</p>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; text-align: center; background: #e0e0e0; font-size: 12px; margin-bottom: 0;">
-                    <button class="primary-btn" onclick="copyLink()" style="width: auto; padding: 12px;">Copy</button>
-                </div>
-                
-                <!-- NAYA FIX: Direct Social Sharing Buttons -->
-                <h4 style="color: #0A192F; font-size: 14px; margin-bottom: 15px; margin-top: 10px;">Share Direct Via</h4>
-                <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 10px;">
-                    <div onclick="shareSocial('whatsapp')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #e8f5e9; color: #25d366; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                        <i class="fa-brands fa-whatsapp"></i>
-                    </div>
-                    <div onclick="shareSocial('facebook')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #e3f2fd; color: #1877f2; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                        <i class="fa-brands fa-facebook-f"></i>
-                    </div>
-                    <div onclick="shareSocial('twitter')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #e0e0e0; color: #000; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                        <i class="fa-brands fa-x-twitter"></i>
-                    </div>
-                    <div onclick="shareSocial('instagram')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #fce4ec; color: #e1306c; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                        <i class="fa-brands fa-instagram"></i>
-                    </div>
-                </div>
+            <!-- Header section matching image -->
+            <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 onclick="switchTab('home')" style="cursor: pointer; margin: 0; font-size: 18px;">⬅ Back</h3>
+                <h3 style="margin: 0; font-size: 20px; text-align: center; flex: 1;">Team</h3>
+                <i class="fa-solid fa-headset" style="cursor: pointer; font-size: 20px;" onclick="alert('Support Section Opening...')"></i>
             </div>
             
-            <div class="recent-activity">
-                <h3>My Team Details</h3>
-                <div class="activity-item">
-                    <div><strong>Total Referrals</strong></div>
-                    <div class="activity-amount" style="color: #0A192F; font-size: 18px;">0 Members</div>
+            <!-- Main Blue Card (Commission & Stats) -->
+            <div class="wallet-card" style="margin: 15px; border-radius: 12px; padding: 20px; background: #0A192F; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                <p style="margin: 0; color: #ddd; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-coins" style="color: #FFD700; font-size: 16px;"></i> My Total Commission
+                </p>
+                <h1 class="wallet-amount" style="font-size: 38px; margin: 10px 0; color: #FFD700;">$0.00</h1>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #bbb;">Commission Yesterday</span>
+                        <strong style="color: white;">0.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #bbb;">Team Count</span>
+                        <strong class="activity-amount" style="color: white;">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #bbb;">Commission Today</span>
+                        <strong style="color: #28a745;">+0.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #bbb;">Today New Team</span>
+                        <strong style="color: #28a745;">+0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invitation Link Section -->
+            <div style="margin: 20px 15px;">
+                <h4 style="color: #0A192F; margin-bottom: 10px; font-size: 15px;">Invitation Link</h4>
+                <div style="display: flex; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; border: none; padding: 12px; font-size: 13px; outline: none; background: transparent; color: #555;">
+                    <button onclick="copyLink()" style="background: #0A192F; color: white; border: none; padding: 0 20px; cursor: pointer; transition: background 0.3s;">
+                        <i class="fa-regular fa-copy" style="font-size: 16px;"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- More Ways To Invite Section (Social Sharing Enabled) -->
+            <div style="margin: 25px 15px;">
+                <h4 style="color: #0A192F; margin-bottom: 15px; font-size: 15px;">More Ways To Invite</h4>
+                <div style="display: flex; justify-content: space-between; text-align: center;">
+                    <div onclick="shareSocial('facebook')" style="cursor: pointer;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #e3f2fd; color: #1877f2; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: 22px;">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </div>
+                        <span style="font-size: 11px; color: #555; font-weight: bold;">Facebook</span>
+                    </div>
+                    <div onclick="shareSocial('twitter')" style="cursor: pointer;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #e0e0e0; color: #000; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: 22px;">
+                            <i class="fa-brands fa-x-twitter"></i>
+                        </div>
+                        <span style="font-size: 11px; color: #555; font-weight: bold;">X (Twitter)</span>
+                    </div>
+                    <div onclick="shareSocial('whatsapp')" style="cursor: pointer;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #e8f5e9; color: #25d366; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: 22px;">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </div>
+                        <span style="font-size: 11px; color: #555; font-weight: bold;">WhatsApp</span>
+                    </div>
+                    <div onclick="shareSocial('instagram')" style="cursor: pointer;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #fce4ec; color: #e1306c; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: 22px;">
+                            <i class="fa-brands fa-instagram"></i>
+                        </div>
+                        <span style="font-size: 11px; color: #555; font-weight: bold;">Instagram</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAYA FIX: Team Detail Section (IDs & Levels) -->
+            <div style="margin: 25px 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h4 style="color: #0A192F; font-size: 15px; margin: 0;">
+                        <i class="fa-solid fa-users" style="color: #0A192F; margin-right: 5px;"></i> Team Detail
+                    </h4>
+                    <span style="color: #0A192F; font-size: 13px; font-weight: bold; cursor: pointer;">
+                        <i class="fa-regular fa-eye"></i> View All
+                    </span>
+                </div>
+                
+                <div style="background: white; border-radius: 12px; padding: 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.06);">
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; font-size: 12px; color: #888; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                        <span>User ID</span>
+                        <span style="text-align: center;">Level</span>
+                        <span style="text-align: center;">Rate</span>
+                        <span style="text-align: right;">Comm.</span>
+                    </div>
+                    <!-- Level 1 User Mock Data -->
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; font-size: 13px; color: #333; margin-bottom: 15px; align-items: center;">
+                        <span style="color: #0A192F; font-weight: bold;">SS-1045</span>
+                        <span style="text-align: center; background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 2px; font-size: 11px; font-weight: bold;">Level 1</span>
+                        <span style="text-align: center; color: #007bff; font-weight: bold;">10%</span>
+                        <span style="text-align: right; color: #28a745; font-weight: bold;">+$5.00</span>
+                    </div>
+                    <!-- Level 2 User Mock Data -->
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; font-size: 13px; color: #333; align-items: center;">
+                        <span style="color: #0A192F; font-weight: bold;">SS-1089</span>
+                        <span style="text-align: center; background: #f3e5f5; color: #9c27b0; border-radius: 4px; padding: 2px; font-size: 11px; font-weight: bold;">Level 2</span>
+                        <span style="text-align: center; color: #007bff; font-weight: bold;">5%</span>
+                        <span style="text-align: right; color: #28a745; font-weight: bold;">+$2.50</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- ================= ALL OVERLAYS / MODALS BELOW ================= -->
 
-        <!-- NAYA FIX: MY GROUPS POPUP MODAL -->
+        <!-- NAYA FIX: MY GROUPS POPUP MODAL (List updated for actual joined pools) -->
         <div id="my-groups-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; max-height: 85vh; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
@@ -277,27 +347,8 @@
                     <span onclick="closeMyGroups()" style="cursor: pointer; font-size: 24px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 
-                <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
-                    <!-- Group Card Template -->
-                    <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h4 style="color: #0A192F; margin: 0;">Gold Saver Pool</h4>
-                            <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">Active</span>
-                        </div>
-                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Monthly: $5,000</p>
-                        
-                        <div style="background: #f4f7f6; padding: 10px; border-radius: 8px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 5px;">
-                                <span>Joined: <span style="color:#0A192F;" id="joined-count">15</span></span>
-                                <span>Max Capacity: <span style="color:#0A192F;">20</span></span>
-                            </div>
-                            <!-- Progress Bar -->
-                            <div style="width: 100%; background: #ddd; height: 6px; border-radius: 3px; overflow: hidden;">
-                                <div id="dynamic-progress-bar" style="width: 0%; background: #4caf50; height: 100%; transition: width 0.5s ease-in-out;"></div>
-                            </div>
-                            <p style="font-size: 11px; color: #d32f2f; margin-top: 5px; text-align: right; font-weight: bold;">Only 5 spots left!</p>
-                        </div>
-                    </div>
+                <div id="my-groups-modal-list" style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+                    <!-- Real pools will be loaded here via JS -->
                 </div>
             </div>
         </div>
@@ -358,7 +409,7 @@
             </div>
         </div>
         
-        <!-- CHANGE PASSWORD MODAL (NAYA FIX: BACK BUTTON) -->
+        <!-- CHANGE PASSWORD MODAL -->
         <div id="change-password-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; max-width: 400px; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
@@ -382,7 +433,7 @@
             </div>
         </div>
         
-        <!-- TRANSACTION HISTORY OVERLAY (NAYA FIX: BACK BUTTON) -->
+        <!-- TRANSACTION HISTORY OVERLAY -->
         <div id="history-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; max-height: 85vh; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
@@ -396,7 +447,7 @@
             </div>
         </div>
 
-        <!-- WITHDRAWAL MODAL (NAYA FIX: BACK BUTTON) -->
+        <!-- WITHDRAWAL MODAL -->
         <div id="withdrawal-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
