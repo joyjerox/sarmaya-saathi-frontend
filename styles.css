@@ -1,9 +1,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
 
-/* NAYA FIX: Android Safe Area & Full Screen Setup */
+/* Android Safe Area & Full Screen Setup */
 html, body {
     width: 100%;
-    height: 100%; /* 100vh ki jagah 100% native me zyada stable hota hai */
+    height: 100%; /* 100% native me zyada stable hota hai */
     margin: 0;
     padding: 0;
     overflow-x: hidden; /* Horizontal scrolling block karne ke liye */
@@ -19,7 +19,7 @@ html, body {
     padding-right: env(safe-area-inset-right);
 }
 
-/* Mobile Frame (Updated for Native Full Screen) */
+/* Mobile Frame (Native Full Screen) */
 .app-container { 
     width: 100%; 
     height: 100%; 
@@ -72,13 +72,11 @@ input[type="tel"], input[type="number"]:not(#amount-box):not(#member-box), input
 .recent-activity h3 { color: #333; font-size: 16px; margin-bottom: 10px; }
 .activity-item { background: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 .activity-item .date { font-size: 12px; color: #888; }
-.activity-item .positive { color: green; font-weight: bold; }
+.activity-item .positive { color: #28a745; font-weight: bold; } /* Changed standard green to match ₹ app theme green */
 
 /* Groups Screen */
-.filter-tabs { width: 100%; display: flex; overflow-x: auto; padding: 15px; background: white; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-.filter-tabs::-webkit-scrollbar { display: none; }
-.tab { background: #f4f7f6; border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; margin-right: 10px; cursor: pointer; color: #666; }
-.tab.active { background: #0A192F; color: #FFD700; border: none; }
+.filter-container { display: flex; justify-content: flex-end; align-items: center; padding: 10px 15px; background: #f4f7f6; }
+.filter-container select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background: white; font-weight: bold; color: #0A192F; outline: none; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; }
 .group-list { width: 100%; padding: 15px; }
 .group-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; }
 .group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -86,7 +84,8 @@ input[type="tel"], input[type="number"]:not(#amount-box):not(#member-box), input
 .floating-btn { position: absolute; bottom: 80px; right: 20px; background: #FFD700; color: #0A192F; border: none; padding: 15px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 10; }
 
 /* Join Group Overlay & Sync Inputs */
-.overlay-screen { background-color: #f4f7f6; position: absolute; top: 0; left: 0; z-index: 20; justify-content: flex-start; }
+.overlay-screen { background-color: rgba(0,0,0,0.6); position: absolute; top: 0; left: 0; z-index: 20; justify-content: flex-start; }
+#join-group-screen { background-color: #f4f7f6; } /* Overriding background for specific screen */
 .join-box { width: 90%; background: white; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .slider-group { margin: 20px 0; text-align: left; }
 .slider-group label { display: block; font-weight: bold; color: #0A192F; margin-bottom: 10px; }
@@ -105,7 +104,7 @@ input[type="tel"], input[type="number"]:not(#amount-box):not(#member-box), input
 .bid-btn { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #4caf50; }
 .lot-btn { background-color: #fff8e1; color: #f57f17; border: 2px solid #ffb300; }
 
-/* NAYA FIX: Mobile Profile Box Scroll Fix */
+/* Mobile Profile Box Scroll Fix */
 .profile-modal-box {
     width: 85%;
     max-height: 80vh; 
@@ -121,7 +120,18 @@ input[type="tel"], input[type="number"]:not(#amount-box):not(#member-box), input
 .profile-modal-box::-webkit-scrollbar { width: 4px; }
 .profile-modal-box::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
-/* Bottom Nav (NAYA FIX: Added 4th Item for Referrals) */
-.bottom-nav { position: absolute; bottom: 0; width: 100%; height: 60px; background: white; display: flex; justify-content: space-evenly; align-items: center; border-top: 1px solid #ddd; z-index: 10; }
-.nav-item { color: #888; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+/* Bottom Nav (Size Increased to match Native App Feel) */
+.bottom-nav { position: absolute; bottom: 0; width: 100%; height: auto !important; padding-top: 15px !important; padding-bottom: 25px !important; background: white; display: flex; justify-content: space-evenly; align-items: center; border-top: 1px solid #ddd; z-index: 10; }
+.nav-item { color: #888; font-size: 18px !important; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .nav-item.active { color: #0A192F; border-bottom: 2px solid #FFD700; padding-bottom: 2px; }
+
+/* Refer Page & Dynamic Team UI Helpers (Padding remains strictly preserved) */
+.responsive-box { width: calc(100% - 30px) !important; margin: 20px auto !important; box-sizing: border-box !important; }
+.team-grid-layout { display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr; gap: 5px; align-items: center; width: 100%; }
+
+/* Smooth Fade In for Dynamic Pool Details (Winning Amount & Users) */
+.pool-details-box { display: none; margin-top: 12px; animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
