@@ -354,7 +354,7 @@ function closeJoinScreen() {
 }
 
 // ==========================================
-// MY GROUPS MODAL (NAYA FIX: Detailed View + User ID & Date)
+// MY GROUPS MODAL (Detailed View + Live Real Backend Loop)
 // ==========================================
 function openMyGroups() { 
     document.getElementById('my-groups-modal').style.display = 'block';
@@ -372,11 +372,6 @@ async function fetchMyPoolsForModal() {
     const userId = localStorage.getItem('sarmaya_user_id');
     if (!userId) return;
 
-    // Simulated personal data
-    const myUserId = "SS-" + (1000 + parseInt(userId));
-    const joinDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const joinTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
     try {
         const response = await fetch(`${SERVER_URL}/api/my-pools`, {
             method: 'GET',
@@ -393,25 +388,39 @@ async function fetchMyPoolsForModal() {
             data.my_pools.forEach(pool => {
                 const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Sarmaya Pool');
                 
-                // Detailed data logic
                 const maxMem = pool.max_members || 20;
-                const joinedMem = pool.joined_count || Math.floor(Math.random() * maxMem) + 1; // Fallback to random if not given
+                // Get real joined count from array length if exists, else fallback
+                const joinedMem = pool.joined_count || (pool.members ? pool.members.length : 0);
                 const slotsLeft = maxMem - joinedMem;
                 const progress = (joinedMem / maxMem) * 100;
+
+                // Real Backend Data Loop for Members
+                let membersListHtml = '';
+                if (pool.members && Array.isArray(pool.members) && pool.members.length > 0) {
+                    membersListHtml = `<div style="margin-top: 10px; max-height: 120px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee;">
+                        <strong style="font-size: 12px; color: #0A192F; display: block; margin-bottom: 5px;">Joined Members:</strong>`;
+                    pool.members.forEach((m, idx) => {
+                        let jDate = m.joined_at ? new Date(m.joined_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
+                        let jTime = m.joined_at ? new Date(m.joined_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+                        membersListHtml += `
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #555; padding: 4px 0; border-bottom: 1px solid #e0e0e0;">
+                                <span>${idx + 1}. <strong>${m.user_id || 'User'}</strong></span>
+                                <span>${jDate}, ${jTime}</span>
+                            </div>
+                        `;
+                    });
+                    membersListHtml += `</div>`;
+                } else {
+                    membersListHtml = `<div style="margin-top: 10px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee; text-align: center; font-size: 11px; color: #888;">
+                        Member details will sync from backend.
+                    </div>`;
+                }
 
                 listContainer.innerHTML += `
                     <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h4 style="color: #0A192F; margin: 0;">${poolName}</h4>
                             <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">₹${pool.pool_amount || pool.amount}</span>
-                        </div>
-                        
-                        <!-- NAYA FIX: User ID and Join Date inside Modal -->
-                        <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; color: #1565c0;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span><i class="fa-regular fa-id-badge"></i> ID: <strong>${myUserId}</strong></span>
-                                <span><i class="fa-regular fa-clock"></i> ${joinDate}</span>
-                            </div>
                         </div>
 
                         <!-- Progress Section -->
@@ -427,6 +436,9 @@ async function fetchMyPoolsForModal() {
                                 ${slotsLeft > 0 ? `${slotsLeft} spots left!` : 'Pool Full!'}
                             </p>
                         </div>
+                        
+                        <!-- Real Members List Appended Here -->
+                        ${membersListHtml}
                     </div>
                 `;
             });
@@ -496,7 +508,7 @@ function filterGroups(cycleName) {
     filteredGroups.forEach(group => {
         const poolName = group.cycle ? `${group.cycle} Pool` : (group.name || 'Sarmaya Pool');
         const maxMem = group.max_members || 20;
-        const joinedMem = group.joined_count || 0; 
+        const joinedMem = group.joined_count || (group.members ? group.members.length : 0);
         const slotsLeft = maxMem - joinedMem;
         const progress = (joinedMem / maxMem) * 100;
         
@@ -521,8 +533,8 @@ function filterGroups(cycleName) {
                     </p>
                 </div>
                 
-                <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 10px; width: 100%; background-color: ${slotsLeft === 0 ? '#ccc' : '#0A192F'}; color: ${slotsLeft === 0 ? '#666' : '#FFD700'}; border: none; border-radius: 8px; font-weight: bold; cursor: ${slotsLeft === 0 ? 'not-allowed' : 'pointer'};" ${slotsLeft === 0 ? 'disabled' : ''}>
-                    ${slotsLeft === 0 ? 'Pool Full' : 'Join Pool'}
+                <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 10px; width: 100%; background-color: ${slotsLeft <= 0 ? '#ccc' : '#0A192F'}; color: ${slotsLeft <= 0 ? '#666' : '#FFD700'}; border: none; border-radius: 8px; font-weight: bold; cursor: ${slotsLeft <= 0 ? 'not-allowed' : 'pointer'};" ${slotsLeft <= 0 ? 'disabled' : ''}>
+                    ${slotsLeft <= 0 ? 'Pool Full' : 'Join Pool'}
                 </button>
             </div>
         `;
@@ -599,7 +611,7 @@ async function submitDeposit() {
 }
 
 // ==========================================
-// Dashboard Load (NAYA FIX: Joined Pools Detailed View)
+// Dashboard Load (NAYA FIX: Joined Pools Detailed List from Backend)
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
@@ -631,11 +643,6 @@ async function fetchMyPools() {
     const userId = localStorage.getItem('sarmaya_user_id');
     if (!userId) return;
 
-    // Simulated personal data
-    const myUserId = "SS-" + (1000 + parseInt(userId));
-    const joinDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const joinTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
     try {
         const response = await fetch(`${SERVER_URL}/api/my-pools`, {
             method: 'GET',
@@ -653,25 +660,42 @@ async function fetchMyPools() {
             data.my_pools.forEach(pool => {
                 const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Custom Pool');
                 
-                // Detailed data logic
                 const maxMem = pool.max_members || 20;
-                const joinedMem = pool.joined_count || Math.floor(Math.random() * maxMem) + 1; // Fallback to random if not given
+                // Get real joined count from array length if exists
+                const joinedMem = pool.joined_count || (pool.members ? pool.members.length : 0); 
                 const slotsLeft = maxMem - joinedMem;
                 const progress = (joinedMem / maxMem) * 100;
 
-                listContainer.innerHTML += `
-                    <div class="activity-item" style="border-left: 4px solid #FFD700; background: #fff; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <strong style="color: #0A192F; font-size: 16px;">${poolName}</strong>
-                            <div class="activity-amount positive" style="font-size: 16px; font-weight: bold; color: #28a745;">₹${pool.pool_amount || pool.amount}</div>
-                        </div>
-                        
-                        <!-- NAYA FIX: User ID and Join Date inside Dashboard My Pools -->
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; color: #555;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span><i class="fa-regular fa-id-badge"></i> ID: <strong>${myUserId}</strong></span>
-                                <span><i class="fa-regular fa-clock"></i> ${joinDate}, ${joinTime}</span>
+                // Real Backend Data Loop for Members
+                let membersListHtml = '';
+                if (pool.members && Array.isArray(pool.members) && pool.members.length > 0) {
+                    membersListHtml = `<div style="margin-top: 10px; max-height: 120px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee;">
+                        <strong style="font-size: 12px; color: #0A192F; display: block; margin-bottom: 5px;">Joined Members:</strong>`;
+                    pool.members.forEach((m, idx) => {
+                        let jDate = m.joined_at ? new Date(m.joined_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
+                        let jTime = m.joined_at ? new Date(m.joined_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+                        membersListHtml += `
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #555; padding: 4px 0; border-bottom: 1px solid #e0e0e0;">
+                                <span>${idx + 1}. <strong>${m.user_id || 'User'}</strong></span>
+                                <span>${jDate}, ${jTime}</span>
                             </div>
+                        `;
+                    });
+                    membersListHtml += `</div>`;
+                } else {
+                    membersListHtml = `<div style="margin-top: 10px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee; text-align: center; font-size: 11px; color: #888;">
+                        Member details will sync from backend.
+                    </div>`;
+                }
+
+                listContainer.innerHTML += `
+                    <div class="activity-item" style="border-left: 4px solid #FFD700; background: #fff; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: block;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <strong style="color: #0A192F; font-size: 16px;">${poolName}</strong>
+                                <p class="date" style="margin-top: 5px;">Cycle: ${pool.cycle || 'Weekly'}</p>
+                            </div>
+                            <div class="activity-amount positive" style="font-size: 18px; font-weight: bold; color: #28a745;">₹${pool.pool_amount || pool.amount}</div>
                         </div>
 
                         <!-- Progress Section -->
@@ -687,6 +711,9 @@ async function fetchMyPools() {
                                 ${slotsLeft > 0 ? `${slotsLeft} spots left!` : 'Pool Full!'}
                             </p>
                         </div>
+                        
+                        <!-- Real Members List Appended Here -->
+                        ${membersListHtml}
                     </div>
                 `;
             });
