@@ -32,7 +32,7 @@
                         <input type="tel" id="login-mobile" required pattern="[0-9]{10}" placeholder="10-Digit Mobile Number">
                         <input type="password" id="login-password" required placeholder="Enter Your Password">
                         
-                        <!-- NAYA FIX: Remember Me & Forgot Password ek line me -->
+                        <!-- Remember Me & Forgot Password -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <label style="color: white; font-size: 13px; display: flex; align-items: center; cursor: pointer;">
                                 <input type="checkbox" id="remember-me" style="width: auto; margin: 0 8px 0 0; cursor: pointer;"> Remember me
@@ -40,7 +40,13 @@
                             <span style="color: #FFD700; font-size: 13px; cursor: pointer; text-decoration: underline;" onclick="toggleScreens('forgot')">Forgot Password?</span>
                         </div>
                         
-                        <button type="submit" class="primary-btn">Log In</button>
+                        <!-- Fingerprint Button added to Login Form -->
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="primary-btn" style="flex: 1;">Log In</button>
+                            <button type="button" onclick="biometricLogin()" class="primary-btn" style="width: 55px; padding: 0; background-color: #FFD700; color: #0A192F; border: none; border-radius: 8px;">
+                                <i class="fa-solid fa-fingerprint" style="font-size: 24px;"></i>
+                            </button>
+                        </div>
                     </form>
                     <p id="login-message" class="message-box"></p>
                     <div class="switch-text">
@@ -82,10 +88,8 @@
                 <!-- ================= FORGOT PASSWORD SECTION ================= -->
                 <div id="forgot-section" style="display: none;">
                     <h2 class="title" style="color: #FFD700; margin-bottom: 10px;">Reset Password</h2>
-                    <!-- NAYA FIX: Email Description -->
                     <p style="color: white; font-size: 13px; margin-bottom: 20px;">Enter registered email to get OTP.</p>
                     <form id="forgotForm" onsubmit="sendForgotOTP(event)">
-                        <!-- NAYA FIX: Email Input Field -->
                         <input type="email" id="forgot-email" required placeholder="Registered Email Address">
                         <button type="submit" class="primary-btn" style="background-color: #dc3545; color: white;">Send OTP</button>
                     </form>
@@ -123,7 +127,6 @@
             </div>
 
             <div class="stats-container">
-                <!-- NAYA FIX: onclick="openMyGroups()" update kiya gaya -->
                 <div class="stat-box" onclick="openMyGroups()" style="cursor: pointer;">
                     <h4>My Groups</h4><p>0 Active</p>
                 </div>
@@ -219,10 +222,10 @@
             <p style="text-align: center; font-size: 12px; color: #666; padding: 20px;">*Platform fee of 2% applies to all payouts.</p>
         </div>
 
-        <!-- ================= REFERRAL SYSTEM SCREEN ================= -->
-        <div id="referral-screen" class="screen scrollable-screen" style="display: none; z-index: 30; background: #f4f7f6;">
+        <!-- ================= REFERRAL SYSTEM SCREEN (RESTORED OLD DESIGN + SOCIAL ICONS) ================= -->
+        <div id="referral-screen" class="screen scrollable-screen" style="display: none; padding-bottom: 80px; background: #f4f7f6;">
             <div class="header">
-                <h3 onclick="closeReferralScreen()" style="cursor: pointer;">⬅ Back</h3>
+                <h3 onclick="switchTab('home')" style="cursor: pointer;">⬅ Back</h3>
                 <h3>Refer & Earn</h3>
             </div>
             <div class="wallet-card" style="margin-top: 20px;">
@@ -236,7 +239,25 @@
                     <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; text-align: center; background: #e0e0e0; font-size: 12px; margin-bottom: 0;">
                     <button class="primary-btn" onclick="copyLink()" style="width: auto; padding: 12px;">Copy</button>
                 </div>
+                
+                <!-- NAYA FIX: Direct Social Sharing Buttons -->
+                <h4 style="color: #0A192F; font-size: 14px; margin-bottom: 15px; margin-top: 10px;">Share Direct Via</h4>
+                <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 10px;">
+                    <div onclick="shareSocial('whatsapp')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #e8f5e9; color: #25d366; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </div>
+                    <div onclick="shareSocial('facebook')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #e3f2fd; color: #1877f2; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </div>
+                    <div onclick="shareSocial('twitter')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #e0e0e0; color: #000; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </div>
+                    <div onclick="shareSocial('instagram')" style="cursor: pointer; width: 50px; height: 50px; border-radius: 50%; background: #fce4ec; color: #e1306c; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+                </div>
             </div>
+            
             <div class="recent-activity">
                 <h3>My Team Details</h3>
                 <div class="activity-item">
@@ -299,7 +320,6 @@
                     <h4 id="profile-name" style="color: #0A192F; font-size: 18px; margin-bottom: 5px;">Loading...</h4>
                     <p id="profile-uid" style="background: #e3f2fd; color: #1565c0; display: inline-block; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; margin-bottom: 10px;">User ID: SS-XXXX</p>
                     
-                    <!-- NAYA FIX: Mobile and Email Hide/Show functionality -->
                     <p style="color: #555; font-size: 14px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px;">
                         <span id="profile-mobile" data-full="" data-masked="">+91 ******0000</span>
                         <i class="fa-solid fa-eye-slash" style="cursor: pointer; color: #888; font-size: 12px;" onclick="togglePrivacy('profile-mobile', this)"></i>
@@ -308,6 +328,22 @@
                         <span id="profile-email" data-full="" data-masked="">e***@example.com</span>
                         <i class="fa-solid fa-eye-slash" style="cursor: pointer; color: #888; font-size: 12px;" onclick="togglePrivacy('profile-email', this)"></i>
                     </p>
+                </div>
+                
+                <style>
+                    .switch { position: relative; display: inline-block; width: 44px; height: 24px; margin: 0; }
+                    .switch input { opacity: 0; width: 0; height: 0; }
+                    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+                    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+                    input:checked + .slider { background-color: #0A192F; }
+                    input:checked + .slider:before { transform: translateX(20px); }
+                </style>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #e9ecef; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                    <span style="font-size: 14px; color: #333; font-weight: bold;"><i class="fa-solid fa-fingerprint"></i> Biometric App Lock</span>
+                    <label class="switch">
+                        <input type="checkbox" id="biometric-toggle" onchange="toggleBiometricLock(this)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
                 
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openHistoryModal()">💰 Transaction History</button>
@@ -322,11 +358,12 @@
             </div>
         </div>
         
-        <!-- CHANGE PASSWORD MODAL -->
+        <!-- CHANGE PASSWORD MODAL (NAYA FIX: BACK BUTTON) -->
         <div id="change-password-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; max-width: 400px; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h3 style="color: #0A192F;">Change Password</h3>
+                    <i class="fa-solid fa-arrow-left" onclick="backToProfile('change-password-modal')" style="cursor: pointer; font-size: 18px; color: #0A192F;"></i>
+                    <h3 style="color: #0A192F; margin: 0;">Change Password</h3>
                     <span onclick="closeChangePasswordModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 <form id="changePasswordForm" onsubmit="submitChangePassword(event)">
@@ -345,11 +382,12 @@
             </div>
         </div>
         
-        <!-- TRANSACTION HISTORY OVERLAY -->
+        <!-- TRANSACTION HISTORY OVERLAY (NAYA FIX: BACK BUTTON) -->
         <div id="history-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; max-height: 85vh; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h3 style="color: #0A192F;">Transaction History</h3>
+                    <i class="fa-solid fa-arrow-left" onclick="backToProfile('history-modal')" style="cursor: pointer; font-size: 18px; color: #0A192F;"></i>
+                    <h3 style="color: #0A192F; margin: 0;">Transaction History</h3>
                     <span onclick="closeHistoryModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 <div id="history-list" style="overflow-y: auto; flex-grow: 1; max-height: 60vh;">
@@ -358,11 +396,12 @@
             </div>
         </div>
 
-        <!-- WITHDRAWAL MODAL -->
+        <!-- WITHDRAWAL MODAL (NAYA FIX: BACK BUTTON) -->
         <div id="withdrawal-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
             <div style="width: 90%; background: white; margin: 50px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h3 style="color: #0A192F;">Withdraw Funds</h3>
+                    <i class="fa-solid fa-arrow-left" onclick="backToProfile('withdrawal-modal')" style="cursor: pointer; font-size: 18px; color: #0A192F;"></i>
+                    <h3 style="color: #0A192F; margin: 0;">Withdraw Funds</h3>
                     <span onclick="closeWithdrawalModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
@@ -412,7 +451,7 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation Bar (NAYA FIX: SwitchTab integration for refer) -->
+        <!-- Bottom Navigation Bar -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 Home</div>
             <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">👥 Groups</div>

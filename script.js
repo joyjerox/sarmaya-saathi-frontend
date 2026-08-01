@@ -4,15 +4,80 @@
 const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
 
 // ==========================================
-// 2. Splash Screen & OnLoad Logic
+// Biometric (Fingerprint) Security
 // ==========================================
-setTimeout(() => {
+async function verifyBiometric(reasonText) {
+    if (typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
+        return true; 
+    }
+    try {
+        const { NativeBiometric } = Capacitor.Plugins;
+        const result = await NativeBiometric.isAvailable();
+        if (!result.isAvailable) {
+            alert("Biometric not set up on this device. Please use PIN.");
+            return true; 
+        }
+        const verified = await NativeBiometric.verifyIdentity({
+            reason: reasonText, 
+            title: "Security Check", 
+            subtitle: "Sarmaya Saathi App Lock",
+        });
+        return true; 
+    } catch (error) {
+        console.error("Biometric Verification Failed:", error);
+        return false; 
+    }
+}
+
+// ==========================================
+// NAYA FIX: Biometric Login button function
+// ==========================================
+async function biometricLogin() {
+    const savedMobile = localStorage.getItem('sarmaya_remember_mobile');
+    const savedPassword = localStorage.getItem('sarmaya_remember_password');
+    
+    if (!savedMobile || !savedPassword) {
+        alert("Please login manually and check 'Remember me' to enable Fingerprint Login.");
+        return;
+    }
+
+    const isAuthorized = await verifyBiometric("Login to Sarmaya Saathi");
+    if (isAuthorized) {
+        document.getElementById('login-mobile').value = savedMobile;
+        document.getElementById('login-password').value = savedPassword;
+        // Trigger the login form submission silently
+        document.getElementById('loginForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+}
+
+// ==========================================
+// 2. Splash Screen & OnLoad Logic 
+// ==========================================
+setTimeout(async () => {
     document.getElementById('splash-screen').style.display = 'none';
+    
+    const userId = localStorage.getItem('sarmaya_user_id');
+    const isAppLockEnabled = localStorage.getItem('sarmaya_biometric_lock') === 'true';
+
+    if (userId && isAppLockEnabled) {
+        const unlocked = await verifyBiometric("Unlock Sarmaya Saathi");
+        
+        if (unlocked) {
+            document.getElementById('dashboard-screen').style.display = 'flex';
+            document.getElementById('bottom-nav').style.display = 'flex';
+            
+            const userNameDisplay = document.getElementById('user-name-display');
+            if(userNameDisplay) userNameDisplay.innerText = localStorage.getItem('sarmaya_name') || "User";
+            
+            loadDashboard();
+            return; 
+        }
+    }
+    
     document.getElementById('auth-screen').style.display = 'flex';
 }, 3000); 
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Check URL Referral
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     
@@ -24,7 +89,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 3100); 
     }
 
-    // NAYA FIX: Remember Me Logic on Load
     const savedMobile = localStorage.getItem('sarmaya_remember_mobile');
     const savedPassword = localStorage.getItem('sarmaya_remember_password');
     
@@ -53,14 +117,11 @@ function toggleScreens(screenName) {
 }
 
 // ==========================================
-// FORGOT & RESET PASSWORD LOGIC (Now using Email)
+// FORGOT & RESET PASSWORD LOGIC 
 // ==========================================
 function sendForgotOTP(event) {
     event.preventDefault();
-    // NAYA FIX: Getting Email instead of Mobile
     const email = document.getElementById('forgot-email').value;
-    
-    // Future API call will happen here
     alert(`OTP sent securely to ${email}`);
     toggleScreens('reset'); 
 }
@@ -165,7 +226,7 @@ async function loginUser(event) {
     event.preventDefault(); 
     const mobile = document.getElementById('login-mobile').value;
     const password = document.getElementById('login-password').value;
-    const rememberMe = document.getElementById('remember-me').checked; // Checkbox Check
+    const rememberMe = document.getElementById('remember-me').checked; 
     const messageBox = document.getElementById('login-message');
     
     messageBox.style.color = "#FFD700";
@@ -175,19 +236,17 @@ async function loginUser(event) {
         const response = await fetch(`${SERVER_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', // 🔒 Secure Cookie Setup
+            credentials: 'include', 
             body: JSON.stringify({ mobile_number: mobile, password: password })
         });
         const data = await response.json();
 
         if (response.ok) {
-            // 🔒 localStorage se token store karna hata diya, ab cookie me safe rahega
             localStorage.setItem('sarmaya_user_id', data.user.id);
             localStorage.setItem('sarmaya_name', data.user.name);
             localStorage.setItem('sarmaya_mobile', data.user.mobile_number);
             localStorage.setItem('sarmaya_balance', data.user.wallet_balance);
 
-            // NAYA FIX: Save to local storage if Remember Me is checked
             if (rememberMe) {
                 localStorage.setItem('sarmaya_remember_mobile', mobile);
                 localStorage.setItem('sarmaya_remember_password', password);
@@ -219,7 +278,7 @@ async function loginUser(event) {
 }
 
 // ==========================================
-// App Navigation (NAYA FIX: Added Referrals inside switchTab)
+// App Navigation 
 // ==========================================
 function switchTab(tabName) {
     document.getElementById('dashboard-screen').style.display = 'none';
@@ -263,11 +322,8 @@ function closeJoinScreen() {
     document.getElementById('groups-screen').style.display = 'flex';
 }
 
-// NAYA FIX: My Groups Popup Controls & API Trigger
-function openMyGroups(groupId = 1) { // Default 1 for testing
+function openMyGroups(groupId = 1) { 
     document.getElementById('my-groups-modal').style.display = 'block';
-    
-    // API Call trigger jaise hi popup khulega
     fetchGroupStats(groupId); 
 }
 
@@ -276,12 +332,11 @@ function closeMyGroups() {
 }
 
 // ==========================================
-// Dynamic Group Stats Fetcher (NAYA UPDATE)
+// Dynamic Group Stats Fetcher 
 // ==========================================
 async function fetchGroupStats(groupId) {
     const joinedCountEl = document.getElementById('joined-count');
     
-    // Loading state dikhane ke liye
     if (joinedCountEl) {
         joinedCountEl.innerText = "..."; 
     }
@@ -289,17 +344,15 @@ async function fetchGroupStats(groupId) {
     try {
         const response = await fetch(`${SERVER_URL}/api/group-stats/${groupId}`, {
             method: 'GET',
-            credentials: 'include' // 🔒 Secure Cookie
+            credentials: 'include' 
         });
         
         const data = await response.json();
 
         if (data.success && joinedCountEl) {
-            // UI Update with real count
             joinedCountEl.innerText = data.joined_count;
 
-            // Progress bar update
-            const maxCapacity = 20; // Agar maxCapacity bhi DB se aa rahi ho to 'data.max_capacity' lagayein
+            const maxCapacity = 20; 
             const fillPercentage = (data.joined_count / maxCapacity) * 100;
             const progressBar = document.getElementById('dynamic-progress-bar');
             
@@ -393,7 +446,7 @@ async function joinPool(poolId) {
         const response = await fetch(`${SERVER_URL}/api/join-pool`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', // 🔒 Secure Cookie
+            credentials: 'include', 
             body: JSON.stringify({ user_id: parseInt(userId), pool_id: parseInt(poolId) })
         });
         const data = await response.json();
@@ -447,7 +500,7 @@ async function submitDeposit() {
         const response = await fetch(`${SERVER_URL}/api/deposit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', // 🔒 Secure Cookie
+            credentials: 'include', 
             body: JSON.stringify({ amount: parseFloat(amount), utr_number: utr, payment_method: 'UPI' })
         });
         const data = await response.json();
@@ -471,7 +524,7 @@ async function loadDashboard() {
     try {
         const response = await fetch(`${SERVER_URL}/api/dashboard`, {
             method: 'GET',
-            credentials: 'include' // 🔒 Secure Cookie
+            credentials: 'include' 
         });
         const data = await response.json();
         
@@ -493,7 +546,7 @@ async function fetchMyPools() {
     try {
         const response = await fetch(`${SERVER_URL}/api/my-pools`, {
             method: 'GET',
-            credentials: 'include' // 🔒 Secure Cookie
+            credentials: 'include' 
         });
         const data = await response.json();
 
@@ -532,7 +585,7 @@ async function openProfile() {
         try {
             const response = await fetch(`${SERVER_URL}/api/profile`, {
                 method: 'GET',
-                credentials: 'include' // 🔒 Secure Cookie
+                credentials: 'include' 
             });
             const data = await response.json();
             if(data.success) {
@@ -545,10 +598,9 @@ async function openProfile() {
                 const profileUid = document.getElementById('profile-uid');
                 if (profileUid) profileUid.innerText = "User ID: " + uniqueId;
 
-                // NAYA FIX: Data masking logic for Email & Mobile
                 const rawMobile = String(userData.mobile_number);
                 const mobileFull = "+91 " + rawMobile;
-                const mobileMasked = "+91 ******" + rawMobile.slice(-4); // last 4 digits
+                const mobileMasked = "+91 ******" + rawMobile.slice(-4); 
                 
                 const emailParts = userData.email.split("@");
                 const emailMasked = emailParts[0].charAt(0) + "***@" + emailParts[1];
@@ -559,7 +611,7 @@ async function openProfile() {
                     profileMobile.setAttribute('data-full', mobileFull);
                     profileMobile.setAttribute('data-masked', mobileMasked);
                     profileMobile.innerText = mobileMasked; 
-                    profileMobile.nextElementSibling.className = 'fa-solid fa-eye-slash'; // reset icon
+                    profileMobile.nextElementSibling.className = 'fa-solid fa-eye-slash'; 
                 }
 
                 const profileEmail = document.getElementById('profile-email');
@@ -567,14 +619,34 @@ async function openProfile() {
                     profileEmail.setAttribute('data-full', emailFull);
                     profileEmail.setAttribute('data-masked', emailMasked);
                     profileEmail.innerText = emailMasked; 
-                    profileEmail.nextElementSibling.className = 'fa-solid fa-eye-slash'; // reset icon
+                    profileEmail.nextElementSibling.className = 'fa-solid fa-eye-slash'; 
                 }
             }
         } catch(error) { console.error("Failed to fetch secure profile data"); }
     }
+
+    const biometricToggle = document.getElementById('biometric-toggle');
+    if (biometricToggle) {
+        biometricToggle.checked = (localStorage.getItem('sarmaya_biometric_lock') === 'true');
+    }
 }
 
-// NAYA FIX: Eye Icon Privacy Toggle
+// NAYA FIX: Back to Profile Sub-menu Function
+function backToProfile(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    document.getElementById('profile-menu').style.display = 'block';
+}
+
+function toggleBiometricLock(element) {
+    if (element.checked) {
+        localStorage.setItem('sarmaya_biometric_lock', 'true');
+        alert("🔒 Biometric App Lock Enabled!");
+    } else {
+        localStorage.setItem('sarmaya_biometric_lock', 'false');
+        alert("🔓 Biometric App Lock Disabled!");
+    }
+}
+
 function togglePrivacy(elementId, iconElement) {
     const el = document.getElementById(elementId);
     if (!el) return;
@@ -585,11 +657,11 @@ function togglePrivacy(elementId, iconElement) {
     if (el.innerText === maskedText) {
         el.innerText = fullText;
         iconElement.className = 'fa-solid fa-eye';
-        iconElement.style.color = '#0A192F'; // Dark color when visible
+        iconElement.style.color = '#0A192F'; 
     } else {
         el.innerText = maskedText;
         iconElement.className = 'fa-solid fa-eye-slash';
-        iconElement.style.color = '#888'; // Light color when hidden
+        iconElement.style.color = '#888'; 
     }
 }
 
@@ -627,7 +699,7 @@ async function loadReferralData() {
     try {
         const response = await fetch(`${SERVER_URL}/api/referrals`, {
             method: 'GET', 
-            credentials: 'include' // 🔒 Secure Cookie
+            credentials: 'include' 
         });
         const data = await response.json();
         if (data.success) {
@@ -647,7 +719,29 @@ function copyLink() {
     if(linkInput) { linkInput.select(); document.execCommand('copy'); alert("Invitation Link Copied!"); }
 }
 
-// 🔒 LOGOUT UPDATED TO CLEAR COOKIES VIA BACKEND
+// NAYA FIX: Social Sharing Logic
+function shareSocial(platform) {
+    const link = document.getElementById('invite-link').value;
+    const text = "Join me on Sarmaya Saathi and start saving together! Use my link: ";
+    let url = '';
+
+    if (platform === 'whatsapp') {
+        url = `whatsapp://send?text=${encodeURIComponent(text + link)}`;
+    } else if (platform === 'facebook') {
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+    } else if (platform === 'twitter') {
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`;
+    } else if (platform === 'instagram') {
+        alert("Instagram doesn't support direct web sharing yet. The link has been copied for your Bio/Story!");
+        copyLink();
+        return;
+    }
+    
+    if (url) {
+        window.open(url, '_blank');
+    }
+}
+
 async function logoutUser() {
     try {
         await fetch(`${SERVER_URL}/api/logout`, {
@@ -656,7 +750,6 @@ async function logoutUser() {
         });
     } catch (error) { console.log("Logout request failed"); }
 
-    // Only removing local data, NOT the remember me credentials
     localStorage.removeItem('sarmaya_user_id');
     localStorage.removeItem('sarmaya_name');
     localStorage.removeItem('sarmaya_mobile');
@@ -688,7 +781,7 @@ async function fetchTransactionHistory() {
     try {
         const response = await fetch(`${SERVER_URL}/api/transactions`, {
             method: 'GET', 
-            credentials: 'include' // 🔒 Secure Cookie
+            credentials: 'include' 
         });
         const data = await response.json();
         if (data.success) {
@@ -725,28 +818,42 @@ function openWithdrawalModal() {
 }
 function closeWithdrawalModal() { document.getElementById('withdrawal-modal').style.display = 'none'; }
 
+// ==========================================
+// SECURE Withdrawal (Transaction Lock)
+// ==========================================
 async function submitWithdrawal(event) {
     event.preventDefault(); 
     const messageBox = document.getElementById('withdraw-message');
+    
+    const amount = parseFloat(document.getElementById('withdraw-amount').value);
+    const method = document.getElementById('withdraw-method').value;
+    const details = document.getElementById('withdraw-details').value;
+    const userId = localStorage.getItem('sarmaya_user_id');
+    
+    if (!userId) {
+        messageBox.style.color = '#dc3545';
+        messageBox.innerText = 'Authentication error. Please login again.';
+        return;
+    }
+
     messageBox.style.color = '#007bff';
-    messageBox.style.display = 'block';
+    messageBox.innerText = '🔐 Waiting for fingerprint verification...';
+    
+    const isAuthorized = await verifyBiometric(`Authorize withdrawal of $${amount}`);
+    
+    if (!isAuthorized) {
+        messageBox.style.color = '#dc3545';
+        messageBox.innerText = '❌ Withdrawal cancelled. Fingerprint verification failed.';
+        return; 
+    }
+
     messageBox.innerText = '⏳ Processing request... Please wait.';
     
     try {
-        const amount = parseFloat(document.getElementById('withdraw-amount').value);
-        const method = document.getElementById('withdraw-method').value;
-        const details = document.getElementById('withdraw-details').value;
-        const userId = localStorage.getItem('sarmaya_user_id');
-        if (!userId) {
-            messageBox.style.color = '#dc3545';
-            messageBox.innerText = 'Authentication error. Please login again.';
-            return;
-        }
-
         const response = await fetch(`${SERVER_URL}/api/withdraw`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', // 🔒 Secure Cookie
+            credentials: 'include', 
             body: JSON.stringify({ amount: amount, payment_method: method, payment_details: details })
         });
         
