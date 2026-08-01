@@ -4,6 +4,54 @@
 const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
 
 // ==========================================
+// NAYA FIX: Multi-Language Translation Logic
+// ==========================================
+const translations = {
+    en: {
+        greeting: "Hi,", wallet: "Total Wallet Balance", add_funds: "+ Add Funds", my_groups: "My Groups", 
+        referrals: "Referrals", recent: "Recent Activity", joined_pools: "My Joined Pools",
+        nav_home: "🏠 Home", nav_groups: "👥 Groups", nav_payouts: "💰 Payouts", nav_refer: "🤝 Refer",
+        active_groups: "Active Groups", filter: "Filter:", action_center: "Action Center",
+        team: "Team", my_total_comm: "My Total Commission", comm_yest: "Commission Yesterday",
+        team_count: "Team Count", comm_today: "Commission Today", today_new: "Today New Team",
+        inv_link: "Invitation Link", more_ways: "More Ways To Invite", more: "More", team_det: "Team Detail"
+    },
+    hi: {
+        greeting: "नमस्ते,", wallet: "कुल वॉलेट बैलेंस", add_funds: "+ पैसे जोड़ें", my_groups: "मेरे समूह", 
+        referrals: "रेफरल", recent: "हाल की गतिविधि", joined_pools: "मेरे जुड़े हुए पूल",
+        nav_home: "🏠 होम", nav_groups: "👥 समूह", nav_payouts: "💰 पेआउट", nav_refer: "🤝 रेफर",
+        active_groups: "सक्रिय समूह", filter: "फ़िल्टर:", action_center: "एक्शन सेंटर",
+        team: "टीम", my_total_comm: "मेरा कुल कमीशन", comm_yest: "कल का कमीशन",
+        team_count: "टीम की संख्या", comm_today: "आज का कमीशन", today_new: "आज की नई टीम",
+        inv_link: "निमंत्रण लिंक", more_ways: "आमंत्रित करने के अन्य तरीके", more: "और", team_det: "टीम विवरण"
+    }
+};
+
+let currentLang = localStorage.getItem('sarmaya_lang') || 'en';
+
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'hi' : 'en';
+    localStorage.setItem('sarmaya_lang', currentLang);
+    applyLanguage();
+}
+
+function applyLanguage() {
+    document.getElementById('lang-btn').innerHTML = currentLang === 'en' ? '<span>EN/HI</span> <i class="fa-solid fa-language"></i>' : '<span>HI/EN</span> <i class="fa-solid fa-language"></i>';
+    
+    document.getElementById('nav-text-home').innerText = translations[currentLang].nav_home;
+    document.getElementById('nav-text-groups').innerText = translations[currentLang].nav_groups;
+    document.getElementById('nav-text-payouts').innerText = translations[currentLang].nav_payouts;
+    document.getElementById('nav-text-refer').innerText = translations[currentLang].nav_refer;
+
+    document.querySelectorAll('[data-lang-key]').forEach(el => {
+        const key = el.getAttribute('data-lang-key');
+        if (translations[currentLang][key]) {
+            el.innerHTML = translations[currentLang][key] + (key === 'greeting' ? ` <span id="user-name-display" style="color: white;">${localStorage.getItem('sarmaya_name') || 'User'}</span>` : '');
+        }
+    });
+}
+
+// ==========================================
 // Biometric (Fingerprint) Security
 // ==========================================
 async function verifyBiometric(reasonText) {
@@ -29,9 +77,6 @@ async function verifyBiometric(reasonText) {
     }
 }
 
-// ==========================================
-// Biometric Login button function
-// ==========================================
 async function biometricLogin() {
     const savedMobile = localStorage.getItem('sarmaya_remember_mobile');
     const savedPassword = localStorage.getItem('sarmaya_remember_password');
@@ -69,6 +114,7 @@ setTimeout(async () => {
             if(userNameDisplay) userNameDisplay.innerText = localStorage.getItem('sarmaya_name') || "User";
             
             loadDashboard();
+            applyLanguage();
             return; 
         }
     }
@@ -77,6 +123,8 @@ setTimeout(async () => {
 }, 3000); 
 
 window.addEventListener('DOMContentLoaded', () => {
+    applyLanguage(); // Initial Language Setup
+    
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     
@@ -115,9 +163,6 @@ function toggleScreens(screenName) {
     if (activeScreen) activeScreen.style.display = 'block';
 }
 
-// ==========================================
-// FORGOT & RESET PASSWORD LOGIC 
-// ==========================================
 function sendForgotOTP(event) {
     event.preventDefault();
     const email = document.getElementById('forgot-email').value;
@@ -129,21 +174,16 @@ function resetPassword(event) {
     event.preventDefault();
     const otp = document.getElementById('reset-otp').value;
     const newPwd = document.getElementById('reset-new-pwd').value;
-    
     alert('Password reset successful! Please login with your new password.');
     toggleScreens('login');
 }
 
-// ==========================================
-// User Signup Logic
-// ==========================================
 async function registerUser(event) {
     event.preventDefault(); 
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const mobile = document.getElementById('reg-mobile').value;
     const password = document.getElementById('reg-password').value;
-    
     const refInput = document.getElementById('reg-referral');
     const referral_code = refInput ? refInput.value.trim() : ''; 
     const messageBox = document.getElementById('signup-message');
@@ -175,9 +215,6 @@ async function registerUser(event) {
     }
 }
 
-// ==========================================
-// OTP Verification Logic 
-// ==========================================
 async function verifyOTPUser(event) {
     event.preventDefault();
     const email = localStorage.getItem('temp_email');
@@ -218,9 +255,6 @@ async function verifyOTPUser(event) {
     }
 }
 
-// ==========================================
-// User Login Function
-// ==========================================
 async function loginUser(event) {
     event.preventDefault(); 
     const mobile = document.getElementById('login-mobile').value;
@@ -263,9 +297,10 @@ async function loginUser(event) {
             if(userNameDisplay) userNameDisplay.innerText = data.user.name;
             
             const walletBalance = document.getElementById('wallet-balance');
-            if(walletBalance) walletBalance.innerText = `$${data.user.wallet_balance}`;
+            if(walletBalance) walletBalance.innerText = `₹${data.user.wallet_balance}`;
             
             loadDashboard();
+            applyLanguage();
         } else {
             messageBox.style.color = "#dc3545";
             messageBox.innerText = `⚠️ Error: ${data.error}`;
@@ -276,9 +311,6 @@ async function loginUser(event) {
     }
 }
 
-// ==========================================
-// App Navigation 
-// ==========================================
 function switchTab(tabName) {
     document.getElementById('dashboard-screen').style.display = 'none';
     document.getElementById('groups-screen').style.display = 'none';
@@ -330,7 +362,6 @@ function closeMyGroups() {
     document.getElementById('my-groups-modal').style.display = 'none';
 }
 
-// Fetch Pools for My Groups Modal (Dynamic Naming applied)
 async function fetchMyPoolsForModal() {
     const listContainer = document.getElementById('my-groups-modal-list');
     if(listContainer) listContainer.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px; padding: 20px;">Loading your pools...</p>';
@@ -352,7 +383,6 @@ async function fetchMyPoolsForModal() {
             }
             listContainer.innerHTML = ''; 
             data.my_pools.forEach(pool => {
-                // Dynamic Pool Name
                 const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Sarmaya Pool');
                 listContainer.innerHTML += `
                     <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
@@ -360,7 +390,7 @@ async function fetchMyPoolsForModal() {
                             <h4 style="color: #0A192F; margin: 0;">${poolName}</h4>
                             <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">Active</span>
                         </div>
-                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cycle: ${pool.cycle || 'Weekly'} | Amount: $${pool.pool_amount || pool.amount}</p>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cycle: ${pool.cycle || 'Weekly'} | Amount: ₹${pool.pool_amount || pool.amount}</p>
                         
                         <div style="background: #f4f7f6; padding: 10px; border-radius: 8px;">
                             <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 5px;">
@@ -402,9 +432,6 @@ function checkLimits(type) {
     if (isNaN(val) || val < min) { box.value = min; slider.value = min; }
 }
 
-// ==========================================
-// Groups Logic & Filtering
-// ==========================================
 let globalGroupsList = []; 
 async function fetchGroups() {
     try {
@@ -415,7 +442,7 @@ async function fetchGroups() {
         const data = await response.json();
         if (data.success) {
             globalGroupsList = data.groups; 
-            filterPoolsDropdown(); // Use dropdown value to load initially
+            filterPoolsDropdown(); 
         }
     } catch (error) {
         document.querySelector('.group-list').innerHTML = '<p style="text-align: center; color: red;">Failed to load pools from server.</p>';
@@ -438,7 +465,6 @@ function filterGroups(cycleName) {
     }
 
     filteredGroups.forEach(group => {
-        // Dynamic Pool Name
         const poolName = group.cycle ? `${group.cycle} Pool` : (group.name || 'Sarmaya Pool');
         groupListContainer.innerHTML += `
             <div class="group-card">
@@ -446,7 +472,7 @@ function filterGroups(cycleName) {
                     <strong>${poolName}</strong>
                     <span class="badge">${group.cycle || 'Weekly'}</span>
                 </div>
-                <p style="font-size: 14px; color: #555;">Pool Amount: $${group.pool_amount || group.amount || 0}</p>
+                <p style="font-size: 14px; color: #555;">Pool Amount: ₹${group.pool_amount || group.amount || 0}</p>
                 <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Members: ${group.max_members || 20}</p>
                 <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 8px;">Join Pool</button>
             </div>
@@ -494,9 +520,6 @@ async function createCustomPool() {
     } catch (error) { alert("Backend connection failed!"); }
 }
 
-// ==========================================
-// Wallet Deposit Logic
-// ==========================================
 function openDepositModal() { document.getElementById('depositModal').style.display = 'block'; }
 function closeDepositModal() {
     document.getElementById('depositModal').style.display = 'none';
@@ -526,14 +549,11 @@ async function submitDeposit() {
     } catch (error) { alert("⚠️ Server error. Please try again later."); }
 }
 
-// ==========================================
-// Dashboard Load 
-// ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
     let balance = localStorage.getItem('sarmaya_balance') || 0;
     
-    document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(balance).toFixed(2)}`);
+    document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `₹${parseFloat(balance).toFixed(2)}`);
     if (!userId) return;
 
     try {
@@ -544,12 +564,12 @@ async function loadDashboard() {
         const data = await response.json();
         
         if (data.success) {
-            document.querySelector('.stat-box p').innerText = `${data.active_groups} Active`;
+            document.getElementById('dashboard-active-groups').innerText = data.active_groups;
             localStorage.setItem('sarmaya_balance', data.wallet_balance);
-            document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `$${parseFloat(data.wallet_balance).toFixed(2)}`);
+            document.querySelectorAll('.wallet-amount').forEach(el => el.innerText = `₹${parseFloat(data.wallet_balance).toFixed(2)}`);
             
             const refEarningsDisplay = document.getElementById('dashboard-referral-earnings');
-            if (refEarningsDisplay) refEarningsDisplay.innerText = `$${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
+            if (refEarningsDisplay) refEarningsDisplay.innerText = `₹${parseFloat(data.referral_earnings || 0).toFixed(2)}`;
             fetchMyPools(); 
         }
     } catch (error) { console.error("Dashboard error:", error); }
@@ -573,7 +593,6 @@ async function fetchMyPools() {
             }
             listContainer.innerHTML = ''; 
             data.my_pools.forEach(pool => {
-                // Dynamic Pool Name
                 const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Custom Pool');
                 listContainer.innerHTML += `
                     <div class="activity-item" style="border-left: 4px solid #FFD700; background: #fff; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
@@ -582,7 +601,7 @@ async function fetchMyPools() {
                                 <strong style="color: #0A192F; font-size: 16px;">${poolName}</strong>
                                 <p class="date" style="margin-top: 5px;">Cycle: ${pool.cycle || 'Weekly'} | Max Members: ${pool.max_members || 10}</p>
                             </div>
-                            <div class="activity-amount positive" style="font-size: 18px; font-weight: bold; color: #28a745;">$${pool.pool_amount || pool.amount}</div>
+                            <div class="activity-amount positive" style="font-size: 18px; font-weight: bold; color: #28a745;">₹${pool.pool_amount || pool.amount}</div>
                         </div>
                     </div>
                 `;
@@ -591,9 +610,6 @@ async function fetchMyPools() {
     } catch (error) { document.getElementById('my-pools-list').innerHTML = '<p style="color: red; text-align: center;">Failed to load your pools.</p>'; }
 }
 
-// ==========================================
-// Profile, Privacy Toggle & Passwords
-// ==========================================
 async function openProfile() {
     document.getElementById('profile-menu').style.display = 'block';
 
@@ -707,7 +723,7 @@ function submitChangePassword(event) {
 }
 
 // ==========================================
-// Referral System & Others
+// NAYA FIX: Referral Data Integration 
 // ==========================================
 async function loadReferralData() {
     const userId = localStorage.getItem('sarmaya_user_id');
@@ -720,12 +736,34 @@ async function loadReferralData() {
         const data = await response.json();
         if (data.success) {
             const walletAmountEl = document.querySelector('#referral-screen .wallet-amount');
-            if(walletAmountEl) walletAmountEl.innerText = `$${data.commission_earned}`;
+            if(walletAmountEl) walletAmountEl.innerText = `₹${data.commission_earned}`;
             const activityAmountEl = document.querySelector('#referral-screen .activity-amount');
             if(activityAmountEl) activityAmountEl.innerText = `${data.team_size}`; 
             const inviteLink = `${window.location.origin}?ref=${data.referral_code}`;
             const linkInput = document.getElementById('invite-link');
             if(linkInput) linkInput.value = inviteLink;
+
+            // Load Dynamic Team Data
+            const teamList = document.getElementById('team-details-list');
+            if(teamList) {
+                if(data.team && data.team.length > 0) {
+                    let html = '';
+                    data.team.forEach(member => {
+                        let lvlColor = member.level == 1 ? '#1565c0' : '#9c27b0';
+                        let lvlBg = member.level == 1 ? '#e3f2fd' : '#f3e5f5';
+                        html += `
+                        <div class="team-grid-layout" style="font-size: clamp(12px, 3.2vw, 14px); color: #333; margin-bottom: 15px; align-items: center;">
+                            <span style="color: #0A192F; font-weight: bold;">${member.user_id || 'User'}</span>
+                            <span style="text-align: center; background: ${lvlBg}; color: ${lvlColor}; border-radius: 4px; padding: 2px 4px; font-size: clamp(10px, 2.8vw, 12px); font-weight: bold;">Level ${member.level || 1}</span>
+                            <span style="text-align: center; color: #007bff; font-weight: bold;">${member.rate || '10'}%</span>
+                            <span style="text-align: right; color: #28a745; font-weight: bold;">+₹${parseFloat(member.commission || 0).toFixed(2)}</span>
+                        </div>`;
+                    });
+                    teamList.innerHTML = html;
+                } else {
+                    teamList.innerHTML = '<p style="text-align: center; color: #888; font-size: 13px;">No team members found yet.</p>';
+                }
+            }
         }
     } catch (error) { console.error("Referral fetch error:", error); }
 }
@@ -735,6 +773,7 @@ function copyLink() {
     if(linkInput) { linkInput.select(); document.execCommand('copy'); alert("Invitation Link Copied!"); }
 }
 
+// NAYA FIX: More Options sharing capability
 function shareSocial(platform) {
     const link = document.getElementById('invite-link').value;
     const text = "Join me on Sarmaya Saathi and start saving together! Use my link: ";
@@ -749,6 +788,17 @@ function shareSocial(platform) {
     } else if (platform === 'instagram') {
         alert("Instagram doesn't support direct web sharing yet. The link has been copied for your Bio/Story!");
         copyLink();
+        return;
+    } else if (platform === 'more') {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Sarmaya Saathi',
+                text: text,
+                url: link
+            }).catch(err => console.error("Share failed", err));
+        } else {
+            alert("Native sharing is not supported on this browser.");
+        }
         return;
     }
     
@@ -816,7 +866,7 @@ async function fetchTransactionHistory() {
                             <strong style="color: #333; font-size: 14px;">${tx.transaction_type}</strong>
                             <p style="color: #777; font-size: 12px; margin: 3px 0 0 0;">${date} • ${tx.description || ''}</p>
                         </div>
-                        <div style="color: ${color}; font-weight: bold; font-size: 15px;">${sign}$${parseFloat(tx.amount).toFixed(2)}</div>
+                        <div style="color: ${color}; font-weight: bold; font-size: 15px;">${sign}₹${parseFloat(tx.amount).toFixed(2)}</div>
                     </div>
                 `;
             });
@@ -833,9 +883,6 @@ function openWithdrawalModal() {
 }
 function closeWithdrawalModal() { document.getElementById('withdrawal-modal').style.display = 'none'; }
 
-// ==========================================
-// SECURE Withdrawal (Transaction Lock)
-// ==========================================
 async function submitWithdrawal(event) {
     event.preventDefault(); 
     const messageBox = document.getElementById('withdraw-message');
@@ -854,7 +901,7 @@ async function submitWithdrawal(event) {
     messageBox.style.color = '#007bff';
     messageBox.innerText = '🔐 Waiting for fingerprint verification...';
     
-    const isAuthorized = await verifyBiometric(`Authorize withdrawal of $${amount}`);
+    const isAuthorized = await verifyBiometric(`Authorize withdrawal of ₹${amount}`);
     
     if (!isAuthorized) {
         messageBox.style.color = '#dc3545';

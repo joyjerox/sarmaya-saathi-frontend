@@ -6,7 +6,8 @@
     <title>Sarmaya Saathi</title>
 <meta name="google-site-verification" content="qU3c0jKxvHhg2wkz5gQZwLsWRMarfGetrVj0NyjIW6Y" />
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- NAYA FIX: Updated FontAwesome to show 'X' logo -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <style>
         /* Bottom Navigation 50% Size Increase */
@@ -163,28 +164,34 @@
 
         <!-- 3. Main Dashboard Screen -->
         <div id="dashboard-screen" class="screen scrollable-screen" style="display: none;">
-            <div class="header">
-                <h3>Hi, <span id="user-name-display" style="color: white;">User</span></h3>
+            <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <!-- NAYA FIX: Language Toggle Button -->
+                    <div id="lang-btn" onclick="toggleLanguage()" style="background: #FFD700; color: #0A192F; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        <span>EN/HI</span> <i class="fa-solid fa-language"></i>
+                    </div>
+                    <h3 style="margin: 0;" data-lang-key="greeting">Hi, <span id="user-name-display" style="color: white;">User</span></h3>
+                </div>
                 <div class="profile-icon" onclick="document.getElementById('profile-menu').style.display='block'">👤</div>
             </div>
 
             <div class="wallet-card">
-                <p>Total Wallet Balance</p>
-                <h1 class="wallet-amount" id="wallet-balance">$0.00</h1>
-                <button class="add-money-btn" onclick="openDepositModal()">+ Add Funds</button>
+                <p data-lang-key="wallet">Total Wallet Balance</p>
+                <h1 class="wallet-amount" id="wallet-balance">₹0.00</h1>
+                <button class="add-money-btn" data-lang-key="add_funds" onclick="openDepositModal()">+ Add Funds</button>
             </div>
 
             <div class="stats-container">
                 <div class="stat-box" onclick="openMyGroups()" style="cursor: pointer;">
-                    <h4>My Groups</h4><p>0 Active</p>
+                    <h4 data-lang-key="my_groups">My Groups</h4><p><span id="dashboard-active-groups">0</span> Active</p>
                 </div>
                 <div class="stat-box" onclick="switchTab('referrals')" style="cursor: pointer;">
-                    <h4>Referrals</h4><p id="dashboard-referral-earnings">$0</p>
+                    <h4 data-lang-key="referrals">Referrals</h4><p id="dashboard-referral-earnings">₹0</p>
                 </div>
             </div>
             
             <div class="recent-activity">
-                <h3>Recent Activity</h3>
+                <h3 data-lang-key="recent">Recent Activity</h3>
                 <div class="activity-item">
                     <div><strong>Account Created</strong><p class="date">Today</p></div>
                     <div class="activity-amount positive">Welcome</div>
@@ -192,7 +199,7 @@
             </div>
 
             <div class="recent-activity" id="joined-pools-section" style="margin-top: 20px; padding-bottom: 100px;">
-                <h3>My Joined Pools</h3>
+                <h3 data-lang-key="joined_pools">My Joined Pools</h3>
                 <div id="my-pools-list">
                     <p style="text-align: center; font-size: 14px; color: #666; padding: 10px;">Loading your pools...</p>
                 </div>
@@ -202,12 +209,12 @@
         <!-- 4. Group List Screen -->
         <div id="groups-screen" class="screen scrollable-screen" style="display: none; padding-bottom: 100px;">
             <div class="header">
-                <h3>Active Groups</h3>
+                <h3 data-lang-key="active_groups">Active Groups</h3>
                 <div class="profile-icon" onclick="document.getElementById('profile-menu').style.display='block'" style="cursor: pointer;">👤</div>
             </div>
             
             <div class="filter-container">
-                <label for="poolFilter" style="font-weight: bold; color: #0A192F; font-size: 14px; margin-right: 10px;">Filter:</label>
+                <label for="poolFilter" style="font-weight: bold; color: #0A192F; font-size: 14px; margin-right: 10px;" data-lang-key="filter">Filter:</label>
                 <select id="poolFilter" onchange="filterPoolsDropdown()">
                     <option value="Weekly" selected>Weekly</option>
                     <option value="Monthly">Monthly</option>
@@ -231,7 +238,7 @@
             <div class="join-box">
                 <h4>Customize Your Plan</h4>
                 <div class="slider-group">
-                    <label>Amount ($):</label>
+                    <label>Amount (₹):</label>
                     <div class="slider-input-wrapper">
                         <input type="range" id="amount-slider" min="10" max="5000" step="10" value="10" oninput="syncInputs('amount', 'slider')">
                         <input type="number" id="amount-box" min="10" max="5000" step="10" value="10" oninput="syncInputs('amount', 'box')" onblur="checkLimits('amount')">
@@ -259,11 +266,11 @@
         <!-- 6. Payout Screen -->
         <div id="payouts-screen" class="screen scrollable-screen" style="display: none; padding-bottom: 100px;">
             <div class="header">
-                <h3>Action Center</h3>
+                <h3 data-lang-key="action_center">Action Center</h3>
                 <div class="profile-icon" onclick="document.getElementById('profile-menu').style.display='block'" style="cursor: pointer;">👤</div>
             </div>
             <div class="payout-card">
-                <h3>Current Pool: $0</h3>
+                <h3>Current Pool: ₹0</h3>
                 <p class="timer">⏳ Join a pool to see actions</p>
                 <div class="payout-actions">
                     <button class="action-btn bid-btn" onclick="alert('Bidding prompt opened. Enter discount %.')">🟢 Bidding Karein</button>
@@ -278,32 +285,32 @@
             <!-- Header -->
             <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3 onclick="switchTab('home')" style="cursor: pointer; margin: 0; font-size: 18px;">⬅ Back</h3>
-                <h3 style="margin: 0; font-size: 20px; text-align: center; flex: 1;">Team</h3>
+                <h3 style="margin: 0; font-size: 20px; text-align: center; flex: 1;" data-lang-key="team">Team</h3>
                 <i class="fa-solid fa-headset" style="cursor: pointer; font-size: 20px;" onclick="alert('Support Section Opening...')"></i>
             </div>
             
             <!-- Main Blue Card (Commission & Stats) - AUTO FIT -->
             <div class="wallet-card responsive-box" style="background: #0A192F; color: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
                 <p style="margin: 0; color: #ddd; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-coins" style="color: #FFD700; font-size: 16px;"></i> My Total Commission
+                    <i class="fa-solid fa-coins" style="color: #FFD700; font-size: 16px;"></i> <span data-lang-key="my_total_comm">My Total Commission</span>
                 </p>
-                <h1 class="wallet-amount" style="font-size: 38px; margin: 10px 0; color: #FFD700;">$0.00</h1>
+                <h1 class="wallet-amount" style="font-size: 38px; margin: 10px 0; color: #FFD700;">₹0.00</h1>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; font-size: 13px;">
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #bbb;">Commission Yesterday</span>
-                        <strong style="color: white;">0.00</strong>
+                        <span style="color: #bbb;" data-lang-key="comm_yest">Commission Yesterday</span>
+                        <strong style="color: white;">₹0.00</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #bbb;">Team Count</span>
+                        <span style="color: #bbb;" data-lang-key="team_count">Team Count</span>
                         <strong class="activity-amount" style="color: white;">0</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #bbb;">Commission Today</span>
-                        <strong style="color: #28a745;">+0.00</strong>
+                        <span style="color: #bbb;" data-lang-key="comm_today">Commission Today</span>
+                        <strong style="color: #28a745;">+₹0.00</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #bbb;">Today New Team</span>
+                        <span style="color: #bbb;" data-lang-key="today_new">Today New Team</span>
                         <strong style="color: #28a745;">+0</strong>
                     </div>
                 </div>
@@ -311,7 +318,7 @@
 
             <!-- Invitation Link Section - AUTO FIT -->
             <div class="responsive-box">
-                <h4 style="color: #0A192F; margin-bottom: 10px; font-size: 15px;">Invitation Link</h4>
+                <h4 style="color: #0A192F; margin-bottom: 10px; font-size: 15px;" data-lang-key="inv_link">Invitation Link</h4>
                 <div style="display: flex; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 100%;">
                     <input type="text" id="invite-link" value="https://sarmaya-saathi.vercel.app?ref=USER123" readonly style="flex: 1; border: none; padding: 12px; font-size: 13px; outline: none; background: transparent; color: #555; width: 100%; box-sizing: border-box; text-overflow: ellipsis;">
                     <button onclick="copyLink()" style="background: #0A192F; color: white; border: none; padding: 0 20px; cursor: pointer; transition: background 0.3s;">
@@ -322,7 +329,7 @@
 
             <!-- More Ways To Invite Section - AUTO FIT / FLEXIBLE -->
             <div class="responsive-box">
-                <h4 style="color: #0A192F; margin-bottom: 15px; font-size: 15px;">More Ways To Invite</h4>
+                <h4 style="color: #0A192F; margin-bottom: 15px; font-size: 15px;" data-lang-key="more_ways">More Ways To Invite</h4>
                 <div style="display: flex; justify-content: space-between; text-align: center; width: 100%; flex-wrap: nowrap;">
                     <div onclick="shareSocial('facebook')" style="cursor: pointer; flex: 1;">
                         <div style="width: clamp(45px, 12vw, 55px); height: clamp(45px, 12vw, 55px); border-radius: 50%; background: #e3f2fd; color: #1877f2; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: clamp(20px, 5vw, 24px);">
@@ -348,18 +355,22 @@
                         </div>
                         <span style="font-size: clamp(10px, 2.5vw, 12px); color: #555; font-weight: bold;">Instagram</span>
                     </div>
+                    <!-- NAYA FIX: More Option added -->
+                    <div onclick="shareSocial('more')" style="cursor: pointer; flex: 1;">
+                        <div style="width: clamp(45px, 12vw, 55px); height: clamp(45px, 12vw, 55px); border-radius: 50%; background: #eeeeee; color: #333; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: clamp(20px, 5vw, 24px);">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </div>
+                        <span style="font-size: clamp(10px, 2.5vw, 12px); color: #555; font-weight: bold;" data-lang-key="more">More</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Team Detail Section (IDs & Levels) - AUTO FIT -->
+            <!-- Team Detail Section (Dynamic Output Backend Se Aayega) -->
             <div class="responsive-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <h4 style="color: #0A192F; font-size: 15px; margin: 0;">
-                        <i class="fa-solid fa-users" style="color: #0A192F; margin-right: 5px;"></i> Team Detail
+                        <i class="fa-solid fa-users" style="color: #0A192F; margin-right: 5px;"></i> <span data-lang-key="team_det">Team Detail</span>
                     </h4>
-                    <span style="color: #0A192F; font-size: 13px; font-weight: bold; cursor: pointer;">
-                        <i class="fa-regular fa-eye"></i> View All
-                    </span>
                 </div>
                 
                 <div style="background: white; border-radius: 12px; padding: 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.06); width: 100%; box-sizing: border-box;">
@@ -370,19 +381,9 @@
                         <span style="text-align: center;">Rate</span>
                         <span style="text-align: right;">Comm.</span>
                     </div>
-                    <!-- Level 1 User -->
-                    <div class="team-grid-layout" style="font-size: clamp(12px, 3.2vw, 14px); color: #333; margin-bottom: 15px;">
-                        <span style="color: #0A192F; font-weight: bold;">SS-1045</span>
-                        <span style="text-align: center; background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 2px 4px; font-size: clamp(10px, 2.8vw, 12px); font-weight: bold;">Level 1</span>
-                        <span style="text-align: center; color: #007bff; font-weight: bold;">10%</span>
-                        <span style="text-align: right; color: #28a745; font-weight: bold;">+$5.00</span>
-                    </div>
-                    <!-- Level 2 User -->
-                    <div class="team-grid-layout" style="font-size: clamp(12px, 3.2vw, 14px); color: #333;">
-                        <span style="color: #0A192F; font-weight: bold;">SS-1089</span>
-                        <span style="text-align: center; background: #f3e5f5; color: #9c27b0; border-radius: 4px; padding: 2px 4px; font-size: clamp(10px, 2.8vw, 12px); font-weight: bold;">Level 2</span>
-                        <span style="text-align: center; color: #007bff; font-weight: bold;">5%</span>
-                        <span style="text-align: right; color: #28a745; font-weight: bold;">+$2.50</span>
+                    <!-- Dynamic Team List Container -->
+                    <div id="team-details-list" style="width: 100%;">
+                        <p style="text-align: center; color: #888; font-size: 13px; margin: 10px 0;">Loading team...</p>
                     </div>
                 </div>
             </div>
@@ -508,7 +509,7 @@
                 </div>
                 <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
                     <div style="margin-bottom: 15px;">
-                        <label style="font-size: 14px; color: #333; font-weight: bold;">Amount ($):</label>
+                        <label style="font-size: 14px; color: #333; font-weight: bold;">Amount (₹):</label>
                         <input type="number" id="withdraw-amount" required min="1" step="0.01" placeholder="Enter amount to withdraw" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
                     </div>
                     <div style="margin-bottom: 15px;">
@@ -543,7 +544,7 @@
                 </div>
 
                 <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Step 2:</strong> Submit Payment Details:</p>
-                <label style="font-size: 13px; font-weight:bold;">Amount Paid ($):</label>
+                <label style="font-size: 13px; font-weight:bold;">Amount Paid (₹):</label>
                 <input type="number" id="depositAmount" placeholder="Enter amount" style="width: 100%; padding: 8px; margin-top:5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
                 
                 <label style="font-size: 13px; font-weight:bold;">12-Digit UTR / Ref Number:</label>
@@ -555,10 +556,10 @@
 
         <!-- Bottom Navigation Bar -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
-            <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 Home</div>
-            <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">👥 Groups</div>
-            <div class="nav-item" id="nav-payouts" onclick="switchTab('payouts')">💰 Payouts</div>
-            <div class="nav-item" id="nav-referrals" onclick="switchTab('referrals')">🤝 Refer</div>
+            <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span id="nav-text-home">🏠 Home</span></div>
+            <div class="nav-item" id="nav-groups" onclick="switchTab('groups')"><span id="nav-text-groups">👥 Groups</span></div>
+            <div class="nav-item" id="nav-payouts" onclick="switchTab('payouts')"><span id="nav-text-payouts">💰 Payouts</span></div>
+            <div class="nav-item" id="nav-referrals" onclick="switchTab('referrals')"><span id="nav-text-refer">🤝 Refer</span></div>
         </div>
 
     </div>
