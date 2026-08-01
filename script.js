@@ -52,16 +52,18 @@ function applyLanguage() {
 }
 
 // ==========================================
-// Toggle Details Function
+// 100% WORKING GLOBAL TOGGLE FUNCTION
 // ==========================================
-function togglePoolDetails(elementId) {
+window.togglePoolDetails = function(elementId) {
     const detailBox = document.getElementById(elementId);
+    if (!detailBox) return; // Prevent errors if not found
+    
     if (detailBox.style.display === 'none' || detailBox.style.display === '') {
         detailBox.style.display = 'block';
     } else {
         detailBox.style.display = 'none';
     }
-}
+};
 
 // ==========================================
 // Biometric (Fingerprint) Security
@@ -426,7 +428,7 @@ async function fetchMyPoolsForModal() {
                     membersListHtml += `</div>`;
                 } else {
                     membersListHtml = `<div style="margin-top: 10px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee; text-align: center; font-size: 11px; color: #888;">
-                        Member details will sync from backend.
+                        * Note: To see real member list here, ensure your server.js is fully deployed to your server.
                     </div>`;
                 }
 
@@ -451,7 +453,7 @@ async function fetchMyPoolsForModal() {
                             </p>
                         </div>
                         
-                        <button onclick="togglePoolDetails('${detailsBoxId}')" style="width: 100%; margin-top: 12px; background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                        <button onclick="window.togglePoolDetails('${detailsBoxId}')" style="width: 100%; margin-top: 12px; background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
                             👁️ View Pool Details
                         </button>
                         
@@ -494,7 +496,7 @@ function checkLimits(type) {
 }
 
 // ==========================================
-// Groups Logic & Filtering
+// Groups Logic & Filtering (Now with Toggle Details & Winning Amount)
 // ==========================================
 let globalGroupsList = []; 
 async function fetchGroups() {
@@ -530,10 +532,15 @@ function filterGroups(cycleName) {
 
     filteredGroups.forEach(group => {
         const poolName = group.cycle ? `${group.cycle} Pool` : (group.name || 'Sarmaya Pool');
+        const pAmount = group.pool_amount || group.amount || 0;
         const maxMem = group.max_members || 20;
         const joinedMem = group.joined_count || (group.members ? group.members.length : 0);
         const slotsLeft = maxMem - joinedMem;
         const progress = (joinedMem / maxMem) * 100;
+        
+        // Winning calculation
+        const winningAmount = pAmount * maxMem;
+        const detailsBoxId = `active-details-${group.id}`;
         
         groupListContainer.innerHTML += `
             <div class="group-card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: white; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #0A192F;">
@@ -541,7 +548,7 @@ function filterGroups(cycleName) {
                     <strong style="color: #0A192F; font-size: 16px;">${poolName}</strong>
                     <span class="badge" style="background: #e3f2fd; color: #1565c0; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold;">${group.cycle || 'Weekly'}</span>
                 </div>
-                <p style="font-size: 14px; color: #555; margin-bottom: 15px;">Amount: <strong style="color: #28a745;">₹${group.pool_amount || group.amount || 0}</strong></p>
+                <p style="font-size: 14px; color: #555; margin-bottom: 15px;">Amount: <strong style="color: #28a745;">₹${pAmount}</strong></p>
                 
                 <div style="background: #f4f7f6; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
                     <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 5px;">
@@ -554,6 +561,20 @@ function filterGroups(cycleName) {
                     <p style="font-size: 11px; color: ${slotsLeft <= 5 ? '#dc3545' : '#666'}; margin-top: 5px; text-align: right; font-weight: bold;">
                         ${slotsLeft > 0 ? `${slotsLeft} spots left!` : 'Pool Full!'}
                     </p>
+                </div>
+
+                <button onclick="window.togglePoolDetails('${detailsBoxId}')" style="width: 100%; margin-bottom: 10px; background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                    👁️ View Pool Details
+                </button>
+                
+                <div id="${detailsBoxId}" class="pool-details-box">
+                    <div style="background: #e8f5e9; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #c8e6c9; text-align: center;">
+                        <strong style="color: #2e7d32; font-size: 14px;">🏆 Estimated Winning: ₹${winningAmount}</strong>
+                        <p style="font-size: 11px; color: #4caf50; margin: 3px 0 0 0;">(Based on ${maxMem} members)</p>
+                    </div>
+                    <div style="margin-bottom: 10px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee; text-align: center; font-size: 11px; color: #888;">
+                        Join the pool to see full list of members.
+                    </div>
                 </div>
                 
                 <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 10px; width: 100%; background-color: ${slotsLeft <= 0 ? '#ccc' : '#0A192F'}; color: ${slotsLeft <= 0 ? '#666' : '#FFD700'}; border: none; border-radius: 8px; font-weight: bold; cursor: ${slotsLeft <= 0 ? 'not-allowed' : 'pointer'};" ${slotsLeft <= 0 ? 'disabled' : ''}>
@@ -709,7 +730,7 @@ async function fetchMyPools() {
                     membersListHtml += `</div>`;
                 } else {
                     membersListHtml = `<div style="margin-top: 10px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #eee; text-align: center; font-size: 11px; color: #888;">
-                        Member details will sync from backend.
+                        * Note: To see real member list here, ensure your server.js is fully deployed to your server.
                     </div>`;
                 }
 
@@ -737,7 +758,7 @@ async function fetchMyPools() {
                             </p>
                         </div>
                         
-                        <button onclick="togglePoolDetails('${detailsBoxId}')" style="width: 100%; margin-top: 12px; background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                        <button onclick="window.togglePoolDetails('${detailsBoxId}')" style="width: 100%; margin-top: 12px; background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">
                             👁️ View Pool Details
                         </button>
                         
