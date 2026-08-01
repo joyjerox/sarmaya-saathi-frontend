@@ -4,7 +4,7 @@
 const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
 
 // ==========================================
-// NAYA FIX: Multi-Language Translation Logic
+// Multi-Language Translation Logic
 // ==========================================
 const translations = {
     en: {
@@ -123,7 +123,7 @@ setTimeout(async () => {
 }, 3000); 
 
 window.addEventListener('DOMContentLoaded', () => {
-    applyLanguage(); // Initial Language Setup
+    applyLanguage(); 
     
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
@@ -432,6 +432,9 @@ function checkLimits(type) {
     if (isNaN(val) || val < min) { box.value = min; slider.value = min; }
 }
 
+// ==========================================
+// Groups Logic & Filtering (NAYA FIX: Detailed View)
+// ==========================================
 let globalGroupsList = []; 
 async function fetchGroups() {
     try {
@@ -466,15 +469,35 @@ function filterGroups(cycleName) {
 
     filteredGroups.forEach(group => {
         const poolName = group.cycle ? `${group.cycle} Pool` : (group.name || 'Sarmaya Pool');
+        const maxMem = group.max_members || 20;
+        const joinedMem = group.joined_count || 0; 
+        const slotsLeft = maxMem - joinedMem;
+        const progress = (joinedMem / maxMem) * 100;
+        
         groupListContainer.innerHTML += `
-            <div class="group-card">
-                <div class="group-header">
-                    <strong>${poolName}</strong>
-                    <span class="badge">${group.cycle || 'Weekly'}</span>
+            <div class="group-card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: white; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #0A192F;">
+                <div class="group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong style="color: #0A192F; font-size: 16px;">${poolName}</strong>
+                    <span class="badge" style="background: #e3f2fd; color: #1565c0; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold;">${group.cycle || 'Weekly'}</span>
                 </div>
-                <p style="font-size: 14px; color: #555;">Pool Amount: ₹${group.pool_amount || group.amount || 0}</p>
-                <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Members: ${group.max_members || 20}</p>
-                <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 8px;">Join Pool</button>
+                <p style="font-size: 14px; color: #555; margin-bottom: 15px;">Amount: <strong style="color: #28a745;">₹${group.pool_amount || group.amount || 0}</strong></p>
+                
+                <div style="background: #f4f7f6; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 5px;">
+                        <span>Joined: <span style="color:#0A192F;">${joinedMem}</span></span>
+                        <span>Total: <span style="color:#0A192F;">${maxMem}</span></span>
+                    </div>
+                    <div style="width: 100%; background: #ddd; height: 6px; border-radius: 3px; overflow: hidden;">
+                        <div style="width: ${progress}%; background: ${slotsLeft <= 5 ? '#dc3545' : '#4caf50'}; height: 100%; transition: width 0.5s ease-in-out;"></div>
+                    </div>
+                    <p style="font-size: 11px; color: ${slotsLeft <= 5 ? '#dc3545' : '#666'}; margin-top: 5px; text-align: right; font-weight: bold;">
+                        ${slotsLeft > 0 ? `${slotsLeft} spots left!` : 'Pool Full!'}
+                    </p>
+                </div>
+                
+                <button class="primary-btn" onclick="joinPool(${group.id})" style="padding: 10px; width: 100%; background-color: ${slotsLeft === 0 ? '#ccc' : '#0A192F'}; color: ${slotsLeft === 0 ? '#666' : '#FFD700'}; border: none; border-radius: 8px; font-weight: bold; cursor: ${slotsLeft === 0 ? 'not-allowed' : 'pointer'};" ${slotsLeft === 0 ? 'disabled' : ''}>
+                    ${slotsLeft === 0 ? 'Pool Full' : 'Join Pool'}
+                </button>
             </div>
         `;
     });
@@ -723,7 +746,7 @@ function submitChangePassword(event) {
 }
 
 // ==========================================
-// NAYA FIX: Referral Data Integration 
+// Referral System & Others
 // ==========================================
 async function loadReferralData() {
     const userId = localStorage.getItem('sarmaya_user_id');
@@ -743,7 +766,6 @@ async function loadReferralData() {
             const linkInput = document.getElementById('invite-link');
             if(linkInput) linkInput.value = inviteLink;
 
-            // Load Dynamic Team Data
             const teamList = document.getElementById('team-details-list');
             if(teamList) {
                 if(data.team && data.team.length > 0) {
@@ -773,7 +795,6 @@ function copyLink() {
     if(linkInput) { linkInput.select(); document.execCommand('copy'); alert("Invitation Link Copied!"); }
 }
 
-// NAYA FIX: More Options sharing capability
 function shareSocial(platform) {
     const link = document.getElementById('invite-link').value;
     const text = "Join me on Sarmaya Saathi and start saving together! Use my link: ";
