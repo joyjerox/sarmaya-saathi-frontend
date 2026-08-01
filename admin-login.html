@@ -36,14 +36,14 @@
                 const response = await fetch('https://sarmaya-saathi-api.onrender.com/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // 🔒 NAYA FIX: Ye Cookie ko save karne dega
                     body: JSON.stringify({ password: pass })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    // Token save karein aur admin.html par redirect karein
-                    localStorage.setItem('sarmaya_admin_token', data.token);
+                    // 🔒 NAYA FIX: LocalStorage hataya gaya hai. Cookie browser khud set kar lega.
                     window.location.href = 'admin.html';
                 } else {
                     errorMsg.innerText = "❌ " + data.error;

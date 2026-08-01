@@ -99,7 +99,8 @@
                             <div class="info">
                                 <h3>User: ${req.name}</h3>
                                 <p><strong>Mobile:</strong> +91 ${req.mobile_number}</p>
-                                <p><strong>Amount:</strong> <span style="color: #dc3545; font-weight:bold;">-$${req.amount}</span></p>
+                                <!-- NAYA FIX: Dollar ($) converted to Rupee (₹) -->
+                                <p><strong>Amount:</strong> <span style="color: #dc3545; font-weight:bold;">-₹${req.amount}</span></p>
                                 <p><strong>Method:</strong> ${req.payment_method} | <strong>Details:</strong> <span style="background:#eee; padding:2px 5px;">${req.payment_details}</span></p>
                                 <p style="font-size:12px; color:#999;">📅 ${date}</p>
                             </div>
@@ -172,7 +173,8 @@
                             <div class="info">
                                 <h3>User: ${req.name}</h3>
                                 <p><strong>Mobile:</strong> +91 ${req.mobile_number}</p>
-                                <p><strong>Amount:</strong> <span style="color: #28a745; font-weight:bold;">+$${req.amount}</span></p>
+                                <!-- NAYA FIX: Dollar ($) converted to Rupee (₹) -->
+                                <p><strong>Amount:</strong> <span style="color: #28a745; font-weight:bold;">+₹${req.amount}</span></p>
                                 <p><strong>Method:</strong> ${req.payment_method} | <strong>UTR:</strong> <span style="background:#fff3cd; padding:2px 5px; border:1px solid #ffeeba;">${req.utr_number}</span></p>
                                 <p style="font-size:12px; color:#999;">📅 ${date}</p>
                             </div>
