@@ -8,16 +8,15 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- NAYA FIX: Responsive UI aur Bottom Nav Size badhane ke liye CSS -->
     <style>
         /* Bottom Navigation 50% Size Increase */
         .bottom-nav {
             height: auto !important;
             padding-top: 15px !important;
-            padding-bottom: 25px !important; /* Safe area space */
+            padding-bottom: 25px !important; 
         }
         .bottom-nav .nav-item {
-            font-size: 18px !important; /* Font size increased by 50% */
+            font-size: 18px !important; 
             display: flex;
             flex-direction: column;
             gap: 4px;
@@ -31,10 +30,31 @@
         }
         .team-grid-layout {
             display: grid;
-            grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr; /* Perfectly fits any screen */
+            grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr; 
             gap: 5px;
             align-items: center;
             width: 100%;
+        }
+        
+        /* Filter Dropdown Styling */
+        .filter-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f4f7f6;
+        }
+        .filter-container select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: white;
+            font-weight: bold;
+            color: #0A192F;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-size: 14px;
         }
     </style>
 </head>
@@ -186,24 +206,27 @@
                 <div class="profile-icon" onclick="document.getElementById('profile-menu').style.display='block'" style="cursor: pointer;">👤</div>
             </div>
             
-            <div class="filter-tabs">
-                <button class="tab active" onclick="filterGroups('Weekly', this)">Weekly</button>
-                <button class="tab" onclick="filterGroups('Monthly', this)">Monthly</button>
-                <button class="tab" onclick="filterGroups('Quarterly', this)">Quarterly</button>
-                <button class="tab" onclick="filterGroups('All', this)">All</button>
+            <div class="filter-container">
+                <label for="poolFilter" style="font-weight: bold; color: #0A192F; font-size: 14px; margin-right: 10px;">Filter:</label>
+                <select id="poolFilter" onchange="filterPoolsDropdown()">
+                    <option value="Weekly" selected>Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="All">All Pools</option>
+                </select>
             </div>
 
             <div class="group-list">
                 <p style="text-align: center; padding: 20px; color: #666;">Loading active pools...</p>
             </div>
-            <button class="floating-btn" onclick="openJoinScreen()" style="bottom: 110px;">+ Custom Pool</button>
+            <button class="floating-btn" onclick="openJoinScreen()" style="bottom: 110px;">+ Create New Pool</button>
         </div>
 
         <!-- 5. Join Group Screen -->
         <div id="join-group-screen" class="screen overlay-screen" style="display: none;">
             <div class="header">
                 <h3 onclick="closeJoinScreen()" style="cursor: pointer;">⬅ Back</h3>
-                <h3>Custom Pool</h3>
+                <h3>Create New Pool</h3>
             </div>
             <div class="join-box">
                 <h4>Customize Your Plan</h4>
@@ -250,7 +273,7 @@
             <p style="text-align: center; font-size: 12px; color: #666; padding: 20px;">*Platform fee of 2% applies to all payouts.</p>
         </div>
 
-        <!-- ================= REFERRAL SYSTEM SCREEN (UPDATED RESPONSIVE DESIGN) ================= -->
+        <!-- ================= REFERRAL SYSTEM SCREEN ================= -->
         <div id="referral-screen" class="screen scrollable-screen" style="display: none; padding-bottom: 120px; background: #f4f7f6;">
             <!-- Header -->
             <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -530,7 +553,7 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation Bar (NAYA FIX: Added Inline sizes just in case) -->
+        <!-- Bottom Navigation Bar -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 Home</div>
             <div class="nav-item" id="nav-groups" onclick="switchTab('groups')">👥 Groups</div>

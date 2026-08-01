@@ -330,9 +330,7 @@ function closeMyGroups() {
     document.getElementById('my-groups-modal').style.display = 'none';
 }
 
-// ==========================================
-// NAYA FIX: Fetch Pools for My Groups Modal
-// ==========================================
+// Fetch Pools for My Groups Modal (Dynamic Naming applied)
 async function fetchMyPoolsForModal() {
     const listContainer = document.getElementById('my-groups-modal-list');
     if(listContainer) listContainer.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px; padding: 20px;">Loading your pools...</p>';
@@ -354,10 +352,12 @@ async function fetchMyPoolsForModal() {
             }
             listContainer.innerHTML = ''; 
             data.my_pools.forEach(pool => {
+                // Dynamic Pool Name
+                const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Sarmaya Pool');
                 listContainer.innerHTML += `
                     <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 5px solid #FFD700; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h4 style="color: #0A192F; margin: 0;">${pool.name || 'Custom Pool'}</h4>
+                            <h4 style="color: #0A192F; margin: 0;">${poolName}</h4>
                             <span style="background: #e0f2f1; color: #00796b; font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: bold;">Active</span>
                         </div>
                         <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cycle: ${pool.cycle || 'Weekly'} | Amount: $${pool.pool_amount || pool.amount}</p>
@@ -403,7 +403,7 @@ function checkLimits(type) {
 }
 
 // ==========================================
-// Groups Logic
+// Groups Logic & Filtering
 // ==========================================
 let globalGroupsList = []; 
 async function fetchGroups() {
@@ -415,34 +415,35 @@ async function fetchGroups() {
         const data = await response.json();
         if (data.success) {
             globalGroupsList = data.groups; 
-            const activeTab = document.querySelector('.filter-tabs .tab.active');
-            const defaultFilter = activeTab ? activeTab.innerText : 'Weekly';
-            filterGroups(defaultFilter, activeTab);
+            filterPoolsDropdown(); // Use dropdown value to load initially
         }
     } catch (error) {
         document.querySelector('.group-list').innerHTML = '<p style="text-align: center; color: red;">Failed to load pools from server.</p>';
     }
 }
 
-function filterGroups(cycleName, tabElement) {
-    if (tabElement) {
-        document.querySelectorAll('.filter-tabs .tab').forEach(tab => tab.classList.remove('active'));
-        tabElement.classList.add('active');
-    }
+function filterPoolsDropdown() {
+    const selectedFilter = document.getElementById('poolFilter').value;
+    filterGroups(selectedFilter);
+}
+
+function filterGroups(cycleName) {
     const groupListContainer = document.querySelector('.group-list');
     groupListContainer.innerHTML = ''; 
     let filteredGroups = cycleName === 'All' ? globalGroupsList : globalGroupsList.filter(group => group.cycle === cycleName);
 
     if (filteredGroups.length === 0) {
-        groupListContainer.innerHTML = `<p style="text-align: center; padding: 20px; color: #666;">No active ${cycleName} pools found.</p>`;
+        groupListContainer.innerHTML = `<p style="text-align: center; padding: 20px; color: #666;">No active ${cycleName === 'All' ? '' : cycleName} pools found.</p>`;
         return;
     }
 
     filteredGroups.forEach(group => {
+        // Dynamic Pool Name
+        const poolName = group.cycle ? `${group.cycle} Pool` : (group.name || 'Sarmaya Pool');
         groupListContainer.innerHTML += `
             <div class="group-card">
                 <div class="group-header">
-                    <strong>${group.name || 'Sarmaya Pool'}</strong>
+                    <strong>${poolName}</strong>
                     <span class="badge">${group.cycle || 'Weekly'}</span>
                 </div>
                 <p style="font-size: 14px; color: #555;">Pool Amount: $${group.pool_amount || group.amount || 0}</p>
@@ -572,11 +573,13 @@ async function fetchMyPools() {
             }
             listContainer.innerHTML = ''; 
             data.my_pools.forEach(pool => {
+                // Dynamic Pool Name
+                const poolName = pool.cycle ? `${pool.cycle} Pool` : (pool.name || 'Custom Pool');
                 listContainer.innerHTML += `
                     <div class="activity-item" style="border-left: 4px solid #FFD700; background: #fff; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong style="color: #0A192F; font-size: 16px;">${pool.name || 'Custom Pool'}</strong>
+                                <strong style="color: #0A192F; font-size: 16px;">${poolName}</strong>
                                 <p class="date" style="margin-top: 5px;">Cycle: ${pool.cycle || 'Weekly'} | Max Members: ${pool.max_members || 10}</p>
                             </div>
                             <div class="activity-amount positive" style="font-size: 18px; font-weight: bold; color: #28a745;">$${pool.pool_amount || pool.amount}</div>
