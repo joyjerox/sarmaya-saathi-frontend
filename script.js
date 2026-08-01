@@ -321,7 +321,6 @@ function closeJoinScreen() {
     document.getElementById('groups-screen').style.display = 'flex';
 }
 
-// NAYA FIX: Fetch and display USER'S ACTUAL JOINED POOLS inside the My Groups modal
 function openMyGroups() { 
     document.getElementById('my-groups-modal').style.display = 'block';
     fetchMyPoolsForModal(); 
@@ -331,6 +330,9 @@ function closeMyGroups() {
     document.getElementById('my-groups-modal').style.display = 'none';
 }
 
+// ==========================================
+// NAYA FIX: Fetch Pools for My Groups Modal
+// ==========================================
 async function fetchMyPoolsForModal() {
     const listContainer = document.getElementById('my-groups-modal-list');
     if(listContainer) listContainer.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px; padding: 20px;">Loading your pools...</p>';
@@ -375,26 +377,6 @@ async function fetchMyPoolsForModal() {
         }
     } catch (error) {
         if(listContainer) listContainer.innerHTML = '<p style="color: red; text-align: center;">Failed to load pools.</p>';
-    }
-}
-
-// Fallback logic kept safely
-async function fetchGroupStats(groupId) {
-    const joinedCountEl = document.getElementById('joined-count');
-    if (joinedCountEl) { joinedCountEl.innerText = "..."; }
-    try {
-        const response = await fetch(`${SERVER_URL}/api/group-stats/${groupId}`, { method: 'GET', credentials: 'include' });
-        const data = await response.json();
-        if (data.success && joinedCountEl) {
-            joinedCountEl.innerText = data.joined_count;
-            const maxCapacity = 20; 
-            const fillPercentage = (data.joined_count / maxCapacity) * 100;
-            const progressBar = document.getElementById('dynamic-progress-bar');
-            if(progressBar) { progressBar.style.width = `${fillPercentage}%`; }
-        }
-    } catch (error) {
-        console.error("Failed to fetch joined count:", error);
-        if (joinedCountEl) joinedCountEl.innerText = "Error";
     }
 }
 
@@ -663,7 +645,6 @@ async function openProfile() {
     }
 }
 
-// Back to Profile Sub-menu Function
 function backToProfile(modalId) {
     document.getElementById(modalId).style.display = 'none';
     document.getElementById('profile-menu').style.display = 'block';
@@ -738,7 +719,7 @@ async function loadReferralData() {
             const walletAmountEl = document.querySelector('#referral-screen .wallet-amount');
             if(walletAmountEl) walletAmountEl.innerText = `$${data.commission_earned}`;
             const activityAmountEl = document.querySelector('#referral-screen .activity-amount');
-            if(activityAmountEl) activityAmountEl.innerText = `${data.team_size}`; // Removed "Members" to fit new design
+            if(activityAmountEl) activityAmountEl.innerText = `${data.team_size}`; 
             const inviteLink = `${window.location.origin}?ref=${data.referral_code}`;
             const linkInput = document.getElementById('invite-link');
             if(linkInput) linkInput.value = inviteLink;
