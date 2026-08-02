@@ -21,12 +21,13 @@
         .info h3 { margin: 0 0 5px 0; color: #333; font-size: 18px; }
         .info p { margin: 3px 0; color: #555; font-size: 14px; }
         
-        /* NAYA: KYC Images Styling */
-        .kyc-images { display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
-        .kyc-images img { height: 120px; border-radius: 5px; border: 1px solid #ddd; cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* NAYA: KYC Images Styling (Updated for Selfie) */
+        .kyc-images { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .kyc-images img { height: 130px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); object-fit: cover; }
         .kyc-images img:hover { transform: scale(1.05); }
+        .selfie-img { border: 3px solid #28a745 !important; } /* Selfie highlight */
 
-        .actions { display: flex; gap: 10px; margin-top: 10px; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
         button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
         .btn-approve { background: #28a745; }
         .btn-approve:hover { background: #218838; }
@@ -44,7 +45,7 @@
         <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
     </div>
 
-    <!-- NAYA: KYC Section -->
+    <!-- KYC Section -->
     <h3 class="section-title">🛡️ Pending KYC Verifications</h3>
     <div id="kyc-container">
         <div class="empty-msg">⏳ Loading KYC requests...</div>
@@ -224,31 +225,26 @@
     }
 
     // ==========================================
-    // 3. LOAD KYC REQUESTS (NAYA FEATURE)
+    // 3. LOAD KYC REQUESTS (Updated with Selfie)
     // ==========================================
     async function loadKYC() {
         const container = document.getElementById('kyc-container');
         try {
-            const response = await fetch(`${SERVER_URL}/api/admin/kyc-requests`, {
-                method: 'GET',
-                credentials: 'include' 
-            });
-            
-            if (response.status === 401) {
-                window.location.replace('admin-login.html');
-                return;
-            }
-            
+            const response = await fetch(`${SERVER_URL}/api/admin/kyc-requests`, { method: 'GET', credentials: 'include' });
+            if (response.status === 401) return window.location.replace('admin-login.html');
             const data = await response.json();
 
             if (data.success) {
-                if (data.requests.length === 0) {
-                    container.innerHTML = '<div class="empty-msg">✅ No pending KYC requests.</div>';
-                    return;
-                }
-
+                if (data.requests.length === 0) return container.innerHTML = '<div class="empty-msg">✅ No pending KYC requests.</div>';
                 container.innerHTML = '';
                 data.requests.forEach(req => {
+                    
+                    // Selfie Image HTML (agar available ho to)
+                    const selfieHtml = req.selfie_url ? `
+                        <a href="${req.selfie_url}" target="_blank">
+                            <img src="${req.selfie_url}" class="selfie-img" alt="Liveness Selfie" title="Click to view full Selfie (Liveness Match)">
+                        </a>` : '';
+
                     container.innerHTML += `
                         <div class="card kyc">
                             <div class="info">
@@ -258,6 +254,7 @@
                                 <p><strong>PAN No:</strong> <span style="background:#e3f2fd; padding:2px 5px; font-weight:bold;">${req.pan_number || 'N/A'}</span></p>
                                 
                                 <div class="kyc-images">
+                                    ${selfieHtml}
                                     <a href="${req.aadhar_front_url}" target="_blank">
                                         <img src="${req.aadhar_front_url}" alt="Aadhar Front" title="Click to view full Aadhar Front">
                                     </a>
@@ -268,7 +265,7 @@
                                         <img src="${req.pan_url}" alt="PAN Card" title="Click to view full PAN Card">
                                     </a>
                                 </div>
-                                <p style="font-size:11px; color:#888; margin-top:5px;">*Click images to view full size securely in new tab</p>
+                                <p style="font-size:11px; color:#888; margin-top:5px;">*Click images to view full size securely in new tab.</p>
                             </div>
                             <div class="actions">
                                 <button class="btn-approve" onclick="handleKYCAction(${req.id}, 'approve')">🛡️ Verify & Approve</button>
@@ -277,41 +274,27 @@
                         </div>
                     `;
                 });
-            } else {
-                container.innerHTML = `<div class="empty-msg" style="color:red;">⛔ ${data.error}</div>`;
-            }
-        } catch (error) {
-            container.innerHTML = '<div class="empty-msg" style="color:red;">⚠️ Error connecting to server.</div>';
-        }
+            } else container.innerHTML = `<div class="empty-msg" style="color:red;">⛔ ${data.error}</div>`;
+        } catch (error) { container.innerHTML = '<div class="empty-msg" style="color:red;">⚠️ Error connecting to server.</div>'; }
     }
 
     async function handleKYCAction(id, action) {
         if (!confirm(`Are you sure you want to ${action.toUpperCase()} this user's KYC?`)) return;
         try {
             const response = await fetch(`${SERVER_URL}/api/admin/kyc/${action}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', 
-                body: JSON.stringify({ user_id: id })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ user_id: id })
             });
-
-            if (response.status === 401) {
-                alert("Session expired! Please login again.");
-                window.location.replace('admin-login.html');
-                return;
-            }
-
+            if (response.status === 401) return window.location.replace('admin-login.html');
             const data = await response.json();
             alert(data.success ? "✅ " + data.message : "⚠️ Error: " + data.error);
-            loadKYC(); // Refresh KYC list after action
+            loadKYC(); 
         } catch (error) { alert("⚠️ Server connection failed!"); }
     }
 
-    // Load all sections when page opens
     window.onload = () => {
         loadWithdrawals();
         loadDeposits();
-        loadKYC(); // Start loading KYC requests 
+        loadKYC(); 
     };
 </script>
 
