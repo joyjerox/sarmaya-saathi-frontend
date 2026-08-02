@@ -470,7 +470,9 @@
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openHistoryModal()">💰 Transaction History</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openWithdrawalModal()">🏦 Withdraw Funds</button>
                 
-                <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="alert('KYC System Coming Soon!')">🛡️ Complete KYC Verification</button>
+                <!-- KYC Button Updated -->
+                <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="openKYCModal()">🛡️ Complete KYC Verification</button>
+                
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System Coming Soon!')">🎧 Customer Support</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openChangePasswordModal()">🔒 Change Password</button>
                 
@@ -572,6 +574,49 @@
             </div>
         </div>
 
+        <!-- ================= KYC UPLOAD MODAL (NEW) ================= -->
+        <div id="kyc-modal" class="screen overlay-screen" style="display: none; background: rgba(0,0,0,0.6); z-index: 60;">
+            <div style="width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; background: white; margin: 30px auto auto auto; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+                    <i class="fa-solid fa-arrow-left" onclick="backToProfile('kyc-modal')" style="cursor: pointer; font-size: 18px; color: #0A192F;"></i>
+                    <h3 style="color: #0A192F; margin: 0;">🛡️ Complete KYC</h3>
+                    <span onclick="closeKYCModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
+                </div>
+                
+                <form id="kycForm" onsubmit="submitKYC(event)">
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; font-weight:bold; color: #333;">Aadhar Number:</label>
+                        <input type="text" id="kyc-aadhar-number" required pattern="[0-9]{12}" maxlength="12" placeholder="Enter 12-digit Aadhar" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; font-weight:bold; color: #333;">PAN Number:</label>
+                        <input type="text" id="kyc-pan-number" required pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}" maxlength="10" placeholder="Enter 10-character PAN" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; text-transform: uppercase;">
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; font-weight:bold; color: #333;">Aadhar Front Image:</label>
+                        <input type="file" id="kyc-aadhar-front" required accept="image/*" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px dashed #007bff; border-radius: 5px; box-sizing: border-box; font-size: 12px;">
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 13px; font-weight:bold; color: #333;">Aadhar Back Image:</label>
+                        <input type="file" id="kyc-aadhar-back" required accept="image/*" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px dashed #007bff; border-radius: 5px; box-sizing: border-box; font-size: 12px;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; font-weight:bold; color: #333;">PAN Card Image:</label>
+                        <input type="file" id="kyc-pan-card" required accept="image/*" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px dashed #007bff; border-radius: 5px; box-sizing: border-box; font-size: 12px;">
+                    </div>
+                    
+                    <button type="submit" id="kyc-submit-btn" class="primary-btn" style="background-color: #0A192F; color: white; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; border: none; padding: 12px; border-radius: 8px; font-weight: bold;">
+                        <span>Submit KYC Details</span>
+                    </button>
+                    <p id="kyc-message" style="text-align: center; font-size: 13px; margin-top: 15px; font-weight: bold;"></p>
+                </form>
+            </div>
+        </div>
+
         <!-- Bottom Navigation Bar -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span id="nav-text-home">🏠 Home</span></div>
@@ -591,6 +636,76 @@
             }
             if(event.target.files[0]) {
                 reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+
+        // =====================================
+        // 🛡️ NEW KYC SYSTEM LOGIC 
+        // =====================================
+        function openKYCModal() {
+            document.getElementById('profile-menu').style.display = 'none';
+            document.getElementById('kyc-modal').style.display = 'block';
+        }
+
+        function closeKYCModal() {
+            document.getElementById('kyc-modal').style.display = 'none';
+            document.getElementById('kycForm').reset();
+            document.getElementById('kyc-message').textContent = "";
+        }
+
+        async function submitKYC(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('kyc-submit-btn');
+            const msg = document.getElementById('kyc-message');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Securely...';
+            btn.disabled = true;
+            msg.style.color = "#1565c0";
+            msg.textContent = "Please wait, uploading documents to secure cloud...";
+
+            const form = document.getElementById('kycForm');
+            const formData = new FormData();
+            
+            formData.append('aadhar_number', document.getElementById('kyc-aadhar-number').value);
+            formData.append('pan_number', document.getElementById('kyc-pan-number').value.toUpperCase());
+            formData.append('aadhar_front', document.getElementById('kyc-aadhar-front').files[0]);
+            formData.append('aadhar_back', document.getElementById('kyc-aadhar-back').files[0]);
+            formData.append('pan_card', document.getElementById('kyc-pan-card').files[0]);
+
+            try {
+                // Determine API URL (Uses global API_URL if defined in script.js, otherwise relative)
+                const baseUrl = typeof API_URL !== 'undefined' ? API_URL : ''; 
+
+                const response = await fetch(`${baseUrl}/api/kyc/submit`, {
+                    method: 'POST',
+                    credentials: 'include', // Very important for sending HttpOnly cookies
+                    body: formData // FormData automatically handles Content-Type boundaries
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    msg.style.color = "green";
+                    msg.textContent = data.message;
+                    setTimeout(() => {
+                        closeKYCModal();
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2500);
+                } else {
+                    msg.style.color = "red";
+                    msg.textContent = data.error || "Upload failed. Please try again.";
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("KYC Submit Error:", error);
+                msg.style.color = "red";
+                msg.textContent = "Server connection failed. Check your network.";
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
     </script>
