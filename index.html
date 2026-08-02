@@ -675,13 +675,13 @@
             formData.append('pan_card', document.getElementById('kyc-pan-card').files[0]);
 
             try {
-                // Determine API URL (Uses global API_URL if defined in script.js, otherwise relative)
-                const baseUrl = typeof API_URL !== 'undefined' ? API_URL : ''; 
+                // Direct Render Backend URL use karein
+                const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; 
 
-                const response = await fetch(`${baseUrl}/api/kyc/submit`, {
+                const response = await fetch(`${SERVER_URL}/api/kyc/submit`, {
                     method: 'POST',
-                    credentials: 'include', // Very important for sending HttpOnly cookies
-                    body: formData // FormData automatically handles Content-Type boundaries
+                    credentials: 'include', 
+                    body: formData 
                 });
 
                 const data = await response.json();
