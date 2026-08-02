@@ -496,7 +496,7 @@ function checkLimits(type) {
 }
 
 // ==========================================
-// Groups Logic & Filtering (Now with Toggle Details & Winning Amount)
+// Groups Logic & Filtering (Tabs System synced with Dropdown)
 // ==========================================
 let globalGroupsList = []; 
 async function fetchGroups() {
@@ -508,15 +508,45 @@ async function fetchGroups() {
         const data = await response.json();
         if (data.success) {
             globalGroupsList = data.groups; 
-            filterPoolsDropdown(); 
+            const allTab = document.querySelector('#group-filter-tabs .tab');
+            setGroupFilter('All', allTab); 
         }
     } catch (error) {
         document.querySelector('.group-list').innerHTML = '<p style="text-align: center; color: red;">Failed to load pools from server.</p>';
     }
 }
 
+function setGroupFilter(cycleName, element) {
+    // 1. Update active tab styling dynamically
+    document.querySelectorAll('#group-filter-tabs .tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    if (element) {
+        element.classList.add('active');
+    }
+
+    // 2. Sync dropdown with the button
+    const dropdown = document.getElementById('poolFilter');
+    if (dropdown) {
+        dropdown.value = cycleName;
+    }
+    
+    // 3. Filter groups
+    filterGroups(cycleName);
+}
+
 function filterPoolsDropdown() {
     const selectedFilter = document.getElementById('poolFilter').value;
+    
+    // Sync the tabs with the dropdown
+    document.querySelectorAll('#group-filter-tabs .tab').forEach(tab => {
+        if (tab.innerText === selectedFilter || (selectedFilter === 'All' && tab.innerText === 'All')) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+
     filterGroups(selectedFilter);
 }
 
@@ -655,7 +685,7 @@ async function submitDeposit() {
 }
 
 // ==========================================
-// Dashboard Load (Hidden Details + Winning Amount)
+// Dashboard Load
 // ==========================================
 async function loadDashboard() {
     const userId = localStorage.getItem('sarmaya_user_id');
@@ -947,8 +977,8 @@ function shareSocial(platform) {
         url = `whatsapp://send?text=${encodeURIComponent(text + link)}`;
     } else if (platform === 'facebook') {
         url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
-    } else if (platform === 'twitter') {
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`;
+    } else if (platform === 'telegram') {
+        url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
     } else if (platform === 'instagram') {
         alert("Instagram doesn't support direct web sharing yet. The link has been copied for your Bio/Story!");
         copyLink();
@@ -959,9 +989,10 @@ function shareSocial(platform) {
                 title: 'Sarmaya Saathi',
                 text: text,
                 url: link
-            }).catch(err => console.error("Share failed", err));
+            }).catch(err => console.error("Share cancelled", err));
         } else {
-            alert("Native sharing is not supported on this browser.");
+            alert("Native sharing is not supported on your device/browser. Link copied instead!");
+            copyLink();
         }
         return;
     }

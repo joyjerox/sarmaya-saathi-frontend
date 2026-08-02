@@ -10,14 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <style>
-        /* Bottom Navigation 50% Size Increase */
+        /* Bottom Navigation (Size Reduced by ~20%) */
         .bottom-nav {
             height: auto !important;
-            padding-top: 15px !important;
-            padding-bottom: 25px !important; 
+            padding-top: 12px !important;
+            padding-bottom: 18px !important; 
         }
         .bottom-nav .nav-item {
-            font-size: 18px !important; 
+            font-size: 14px !important; 
             display: flex;
             flex-direction: column;
             gap: 4px;
@@ -40,10 +40,10 @@
         /* Filter Dropdown Styling */
         .filter-container {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
             padding: 10px 15px;
-            background: #f4f7f6;
+            background: transparent;
         }
         .filter-container select {
             padding: 8px 12px;
@@ -223,14 +223,25 @@
                 <div class="profile-icon" onclick="document.getElementById('profile-menu').style.display='block'" style="cursor: pointer;">👤</div>
             </div>
             
-            <div class="filter-container">
-                <label for="poolFilter" style="font-weight: bold; color: #0A192F; font-size: 14px; margin-right: 10px;" data-lang-key="filter">Filter:</label>
-                <select id="poolFilter" onchange="filterPoolsDropdown()">
-                    <option value="Weekly" selected>Weekly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Quarterly">Quarterly</option>
-                    <option value="All">All Pools</option>
-                </select>
+            <div style="background: #f4f7f6; padding: 10px 15px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #e0e0e0;">
+                <!-- Dropdown Filter -->
+                <div class="filter-container">
+                    <label for="poolFilter" style="font-weight: bold; color: #0A192F; font-size: 14px;" data-lang-key="filter">Filter:</label>
+                    <select id="poolFilter" onchange="filterPoolsDropdown()">
+                        <option value="All" selected>All Pools</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Quarterly">Quarterly</option>
+                    </select>
+                </div>
+                
+                <!-- Buttons Filter (Tabs) synced with dropdown -->
+                <div class="filter-tabs" id="group-filter-tabs" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;">
+                    <div class="tab active" onclick="setGroupFilter('All', this)">All</div>
+                    <div class="tab" onclick="setGroupFilter('Weekly', this)">Weekly</div>
+                    <div class="tab" onclick="setGroupFilter('Monthly', this)">Monthly</div>
+                    <div class="tab" onclick="setGroupFilter('Quarterly', this)">Quarterly</div>
+                </div>
             </div>
 
             <div class="group-list">
@@ -347,11 +358,11 @@
                         </div>
                         <span style="font-size: clamp(10px, 2.5vw, 12px); color: #555; font-weight: bold;">Facebook</span>
                     </div>
-                    <div onclick="shareSocial('twitter')" style="cursor: pointer; flex: 1;">
-                        <div style="width: clamp(45px, 12vw, 55px); height: clamp(45px, 12vw, 55px); border-radius: 50%; background: #e0e0e0; color: #000; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: clamp(20px, 5vw, 24px);">
-                            <i class="fa-brands fa-x-twitter"></i>
+                    <div onclick="shareSocial('telegram')" style="cursor: pointer; flex: 1;">
+                        <div style="width: clamp(45px, 12vw, 55px); height: clamp(45px, 12vw, 55px); border-radius: 50%; background: #e3f2fd; color: #0088cc; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: clamp(20px, 5vw, 24px);">
+                            <i class="fa-brands fa-telegram"></i>
                         </div>
-                        <span style="font-size: clamp(10px, 2.5vw, 12px); color: #555; font-weight: bold;">X (Twitter)</span>
+                        <span style="font-size: clamp(10px, 2.5vw, 12px); color: #555; font-weight: bold;">Telegram</span>
                     </div>
                     <div onclick="shareSocial('whatsapp')" style="cursor: pointer; flex: 1;">
                         <div style="width: clamp(45px, 12vw, 55px); height: clamp(45px, 12vw, 55px); border-radius: 50%; background: #e8f5e9; color: #25d366; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto; font-size: clamp(20px, 5vw, 24px);">
