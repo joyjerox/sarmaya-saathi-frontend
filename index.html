@@ -470,7 +470,6 @@
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openHistoryModal()">💰 Transaction History</button>
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="openWithdrawalModal()">🏦 Withdraw Funds</button>
                 
-                <!-- KYC Button Updated -->
                 <button class="action-btn" style="background: #e3f2fd; color: #1565c0; text-align: left; border: 1px solid #90caf9;" onclick="openKYCModal()">🛡️ Complete KYC Verification</button>
                 
                 <button class="action-btn" style="background: #f4f7f6; color: #333; text-align: left; border: 1px solid #ddd;" onclick="alert('Support System Coming Soon!')">🎧 Customer Support</button>
@@ -583,6 +582,9 @@
                     <span onclick="closeKYCModal()" style="cursor: pointer; font-size: 20px; color: #d32f2f; font-weight: bold;">✕</span>
                 </div>
                 
+                <!-- NAYA: KYC Status Message Box -->
+                <div id="kyc-status-message" style="text-align: center; margin-top: 20px; margin-bottom: 20px; display: none;"></div>
+
                 <form id="kycForm" onsubmit="submitKYC(event)">
                     <div style="margin-bottom: 15px;">
                         <label style="font-size: 13px; font-weight:bold; color: #333;">Aadhar Number:</label>
@@ -640,11 +642,53 @@
         }
 
         // =====================================
-        // 🛡️ NEW KYC SYSTEM LOGIC 
+        // 🛡️ NAYA KYC SYSTEM LOGIC (WITH REAL-TIME STATUS CHECK)
         // =====================================
-        function openKYCModal() {
+        async function openKYCModal() {
             document.getElementById('profile-menu').style.display = 'none';
-            document.getElementById('kyc-modal').style.display = 'block';
+            const modal = document.getElementById('kyc-modal');
+            modal.style.display = 'block';
+            
+            const form = document.getElementById('kycForm');
+            const statusMsg = document.getElementById('kyc-status-message');
+            
+            // Loading animation dikhayein jab tak data aata hai
+            form.style.display = 'none';
+            statusMsg.style.display = 'block';
+            statusMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #0A192F;"></i><p style="margin-top: 10px; font-weight: bold;">Checking KYC Status...</p>';
+
+            try {
+                // Apna Render Backend URL direct use karein
+                const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com';
+                const response = await fetch(`${SERVER_URL}/api/profile`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success && data.user_data) {
+                    const status = data.user_data.kyc_status;
+                    
+                    if (status === 'Approved') {
+                        statusMsg.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #28a745; font-size: 50px;"></i><h3 style="color: #28a745; margin: 10px 0;">KYC Verified ✅</h3><p style="color: #555; font-size: 14px;">Aapka account fully verified hai. Ab aap withdrawals kar sakte hain.</p>';
+                    } else if (status === 'Pending') {
+                        statusMsg.innerHTML = '<i class="fa-solid fa-clock-rotate-left" style="color: #ffc107; font-size: 50px;"></i><h3 style="color: #ffc107; margin: 10px 0;">KYC Pending ⏳</h3><p style="color: #555; font-size: 14px;">Aapke documents verify ho rahe hain. Kripya admin ke approval ka wait karein.</p>';
+                    } else if (status === 'Rejected') {
+                        statusMsg.innerHTML = '<div style="background: #ffebee; border-left: 4px solid #dc3545; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: left;"><i class="fa-solid fa-triangle-exclamation" style="color: #dc3545;"></i> <b style="color: #dc3545;">KYC Rejected!</b><br><span style="font-size: 12px; color: #555;">Kripya saaf aur clear photos dobara upload karein.</span></div>';
+                        form.style.display = 'block'; // form wapas dikhayein
+                    } else {
+                        // Unverified ya pehli baar upload karne par form dikhayein
+                        statusMsg.style.display = 'none';
+                        form.style.display = 'block';
+                    }
+                } else {
+                    statusMsg.style.display = 'none';
+                    form.style.display = 'block';
+                }
+            } catch (error) {
+                statusMsg.style.display = 'none';
+                form.style.display = 'block';
+            }
         }
 
         function closeKYCModal() {
@@ -675,7 +719,7 @@
             formData.append('pan_card', document.getElementById('kyc-pan-card').files[0]);
 
             try {
-                // Direct Render Backend URL use karein
+                // Apna Render Backend URL direct use karein
                 const SERVER_URL = 'https://sarmaya-saathi-api.onrender.com'; 
 
                 const response = await fetch(`${SERVER_URL}/api/kyc/submit`, {
@@ -689,11 +733,19 @@
                 if (response.ok && data.success) {
                     msg.style.color = "green";
                     msg.textContent = data.message;
+                    
+                    // Upload hone ke turant baad UI ko "Pending" mode par shift karein
                     setTimeout(() => {
-                        closeKYCModal();
+                        form.style.display = 'none';
+                        const statusMsg = document.getElementById('kyc-status-message');
+                        statusMsg.style.display = 'block';
+                        statusMsg.innerHTML = '<i class="fa-solid fa-clock-rotate-left" style="color: #ffc107; font-size: 50px;"></i><h3 style="color: #ffc107; margin: 10px 0;">KYC Pending ⏳</h3><p style="color: #555; font-size: 14px;">Aapke documents successfully submit ho gaye hain aur ab verification mode mein hain.</p>';
+                        
                         btn.innerHTML = originalText;
                         btn.disabled = false;
-                    }, 2500);
+                        msg.textContent = "";
+                    }, 1500);
+
                 } else {
                     msg.style.color = "red";
                     msg.textContent = data.error || "Upload failed. Please try again.";
